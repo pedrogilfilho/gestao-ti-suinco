@@ -29,7 +29,7 @@ export class AuthService {
       await tx.acesso.update({ where: { id: acesso.id }, data: { ultimoLoginEm: new Date() } });
       await auditar(tx, { atorId: acesso.id, acao: 'login', area: 'auth', itemId: acesso.id });
     });
-    return this.jwt.signAsync({ sub: acesso.id });
+    return this.jwt.signAsync({ sub: acesso.id, t: Date.now() });
   }
 
   async trocarSenha(acessoId: string, { atual, nova }: TrocarSenha) {

@@ -25,7 +25,7 @@ export class JwtGuard implements CanActivate {
     // renova o cookie quando o token já tem mais de 1 hora, para quem está usando não cair no meio do dia
     if (Date.now() / 1000 - usuario.iat > UMA_HORA_S) {
       const res = ctx.switchToHttp().getResponse<Response>();
-      res.cookie(COOKIE, await this.jwt.signAsync({ sub: usuario.acessoId }), opcoesCookie());
+      res.cookie(COOKIE, await this.jwt.signAsync({ sub: usuario.acessoId, t: Date.now() }), opcoesCookie());
     }
     if (usuario.trocarSenha && !meta<boolean>(LIVRE_TROCA)) throw new ErroNegocio(403, 'Troque sua senha para continuar.');
     if (meta<boolean>(EQUIPE) && !usuario.equipeTI) throw new ErroNegocio(403, 'Você não tem permissão para ver isso.');
@@ -37,7 +37,7 @@ export class JwtGuard implements CanActivate {
   // Relê o acesso no banco a cada requisição: suspensão, logout forçado e mudança de permissão valem na hora.
   async carregar(token: string | undefined): Promise<UsuarioSessao> {
     if (!token) throw new ErroNegocio(401, 'Entre no sistema para continuar.');
-    let dados: { sub: string; iat: number };
+    let dados: { sub: string; iat: number; t?: number };
     try {
       dados = await this.jwt.verifyAsync(token);
     } catch {
@@ -46,7 +46,8 @@ export class JwtGuard implements CanActivate {
     const a = await this.db.acesso.findUnique({ where: { id: dados.sub }, include: { pessoa: true, grupo: true, credencial: true } });
     if (!a || a.pessoa.excluidoEm) throw new ErroNegocio(401, 'Entre no sistema para continuar.');
     if (a.suspenso) throw new ErroNegocio(401, 'Seu acesso está suspenso. Fale com a TI.');
-    if (a.revogadoEm && a.revogadoEm.getTime() > dados.iat * 1000) throw new ErroNegocio(401, 'Sua sessão foi encerrada pela TI. Entre de novo.');
+    // t = emissão em milissegundos (o iat do JWT é em segundos e não distingue um login logo depois da revogação)
+    if (a.revogadoEm && a.revogadoEm.getTime() > (dados.t ?? dados.iat * 1000)) throw new ErroNegocio(401, 'Sua sessão foi encerrada pela TI. Entre de novo.');
     const dono = ehDono(a.pessoa.email);
     return {
       acessoId: a.id, pessoaId: a.pessoaId, email: a.pessoa.email, nome: a.pessoa.nome, papel: a.papel, dono,

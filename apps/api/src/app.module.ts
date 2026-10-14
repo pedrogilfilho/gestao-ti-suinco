@@ -4,6 +4,7 @@ import { AuthModule } from './auth/auth.module';
 import { SetoresModule } from './setores/setores.module';
 import { PessoasModule } from './pessoas/pessoas.module';
 import { EquipamentosModule } from './equipamentos/equipamentos.module';
+import { AcessosModule } from './acessos/acessos.module';
 
-@Module({ imports: [ComumModule, AuthModule, SetoresModule, PessoasModule, EquipamentosModule] })
+@Module({ imports: [ComumModule, AuthModule, SetoresModule, PessoasModule, EquipamentosModule, AcessosModule] })
 export class AppModule {}
