@@ -35,7 +35,7 @@ const paraTela = (p: PessoaCompleta) => {
 export class PessoasService {
   constructor(private db: PrismaService, private arquivos: ArquivosService, private eventos: EventosService) {}
 
-  async listar(f: { q: string; setorId?: string; ativo?: string; cursor?: string; limite: number }) {
+  async listar(f: { q: string; setorId?: string; ativo?: string; tecnico?: string; cursor?: string; limite: number }) {
     const ts = termos(f.q);
     const porTermo = await Promise.all(ts.map(async (t): Promise<Prisma.PessoaWhereInput> => {
       const tel = await idsPorTelefone(this.db, 'pessoa', t);
@@ -52,6 +52,9 @@ export class PessoasService {
       where: {
         excluidoEm: null, setorId: f.setorId || undefined,
         ativo: f.ativo === 'sim' ? true : f.ativo === 'nao' ? false : undefined,
+        // técnico da TI = tem acesso tic ou master
+        ...(f.tecnico === 'sim' && { acesso: { papel: { in: ['tic', 'master'] } } }),
+        ...(f.tecnico === 'nao' && { NOT: { acesso: { papel: { in: ['tic', 'master'] } } } }),
         AND: porTermo,
       },
       include: INCLUIR, orderBy: [{ nome: 'asc' }, { id: 'asc' }], take: f.limite + 1,

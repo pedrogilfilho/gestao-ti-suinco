@@ -57,6 +57,13 @@ describe('lista e busca', () => {
     const r = await (await entrarComo(app, t.email)).get('/api/pessoas?q=rh ana').expect(200);
     expect(r.body.itens.map((p: { nome: string }) => p.nome)).toEqual(['Ana Souza']);
   });
+  it('filtro de perfil: técnico da TI ou colaborador', async () => {
+    const t = await tic();
+    await db.pessoa.create({ data: { nome: 'Colab', email: 'colab@suinco.com.br', setorId: t.setorId } });
+    const ag = await entrarComo(app, t.email);
+    expect((await ag.get('/api/pessoas?tecnico=sim')).body.itens.map((p: { email: string }) => p.email)).toEqual([t.email]);
+    expect((await ag.get('/api/pessoas?tecnico=nao')).body.itens.map((p: { email: string }) => p.email)).toEqual(['colab@suinco.com.br']);
+  });
   it('item da lista diz se o Excluir está travado e por quê', async () => {
     const t = await tic();
     const p = await db.pessoa.create({ data: { nome: 'Davi', email: 'davi@suinco.com.br', setorId: t.setorId } });

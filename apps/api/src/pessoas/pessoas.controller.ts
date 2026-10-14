@@ -16,7 +16,7 @@ export class PessoasController {
 
   @EquipeTI() @Get()
   listar(@Query() q: Record<string, string>) {
-    return this.s.listar({ ...parametrosLista(q), setorId: q.setorId, ativo: q.ativo });
+    return this.s.listar({ ...parametrosLista(q), setorId: q.setorId, ativo: q.ativo, tecnico: q.tecnico });
   }
 
   // qualquer pessoa logada troca a própria foto ("Minha foto")
