@@ -4,3 +4,4 @@ export * from './permissoes.js';
 export * from './datas.js';
 export * from './situacoes.js';
 export * from './esquemas/index.js';
+export * from './previsao.js';
