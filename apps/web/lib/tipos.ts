@@ -26,3 +26,17 @@ export type Pessoa = {
   acesso: { id: string; papel: string } | null; equipamentos: { id: string; codigo: string; tipo: string }[];
   temAssinatura: boolean; temFoto: boolean; tecnico: boolean; exclusaoTravada: string | null;
 };
+
+export type Emprestimo = {
+  id: string; equipamento: { id: string; codigo: string; tipo: string; modelo: string };
+  pessoa: { id: string; nome: string; email: string; telefoneCorp: string | null; telefonePart: string | null; setor: string };
+  tecnico: { id: string; nome: string } | null; tecnicoId: string | null; finalidade: string; finalidadeOutra: string; chamadoGlpi: string;
+  retiradaEm: string; previsaoEm: string | null; devolvidoEm: string | null; acessorios: string[]; acessoriosDevolvidos: string[];
+  acessoriosFaltando: string[]; obs: string; obsDevolucao: string; temAssinaturaRetirada: boolean; temAssinaturaDevolucao: boolean;
+  situacao: Situacao;
+};
+
+export type Config = {
+  tiposEmprestaveis: string[]; acessorios: string[]; finalidades: { nome: string; dias: number; hora: string }[];
+  bloqueioAtraso: boolean; assinaturas: boolean; glpiUrl: string; avisoMin: number;
+};
