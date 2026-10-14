@@ -11,7 +11,7 @@ O sistema atual continua no ar até a reescrita cobrir tudo. A migração é fei
 | `packages/shared`: permissões, esquemas, situações e datas | pronto |
 | API: login, setores, usuários, equipamentos, acessos e grupos | pronto |
 | API: empréstimos e devoluções, auditoria com restaurar, configurações, busca | pronto |
-| API: avisos em tempo real (Socket.IO) | a fazer |
+| API: avisos em tempo real (Socket.IO) | pronto |
 | Script de importação do backup do sistema atual | a fazer |
 | Telas (Next.js) | a fazer |
 | Docker de produção (Caddy + Postgres + API + web) | a fazer |
