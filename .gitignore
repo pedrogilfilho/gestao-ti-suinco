@@ -1,0 +1,12 @@
+node_modules
+dist
+.next
+.env
+coverage
+arquivos/
+.arquivos-teste/
+playwright-report
+test-results
+.turbo
+.superpowers/
+*.tsbuildinfo
