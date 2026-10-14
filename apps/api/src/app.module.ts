@@ -7,6 +7,13 @@ import { EquipamentosModule } from './equipamentos/equipamentos.module';
 import { AcessosModule } from './acessos/acessos.module';
 import { EmprestimosModule } from './emprestimos/emprestimos.module';
 import { AuditoriaModule } from './auditoria/auditoria.module';
+import { ConfigModule } from './config/config.module';
+import { BuscaModule } from './busca/busca.module';
 
-@Module({ imports: [ComumModule, AuthModule, SetoresModule, PessoasModule, EquipamentosModule, AcessosModule, EmprestimosModule, AuditoriaModule] })
+@Module({
+  imports: [
+    ComumModule, AuthModule, SetoresModule, PessoasModule, EquipamentosModule,
+    AcessosModule, EmprestimosModule, AuditoriaModule, ConfigModule, BuscaModule,
+  ],
+})
 export class AppModule {}
