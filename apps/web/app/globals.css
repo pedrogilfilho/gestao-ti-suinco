@@ -50,10 +50,12 @@ body { background: var(--bg); color: var(--ink); font-family: system-ui, -apple-
   .chip.ok { color: var(--ok); } .chip.warn { color: var(--warn); } .chip.late { color: var(--late); }
   .selo { display: inline-block; font-size: .82rem; font-weight: 600; padding: 2px 8px; border-radius: 99px; border: 1px solid currentColor; white-space: nowrap; }
   .selo.ok { color: var(--ok); } .selo.out { color: var(--steel); } .selo.warn { color: var(--warn); } .selo.late { color: var(--late); }
+  .selo.info { color: var(--info); }
   .sel-master { background: var(--sel-m-bg); color: var(--sel-m-ink); border-color: transparent; }
   .sel-tic { background: var(--sel-t-bg); color: var(--sel-t-ink); border-color: transparent; }
   .sel-solic { background: var(--sel-s-bg); color: var(--sel-s-ink); border-color: transparent; }
   .sel-consulta { background: transparent; color: var(--muted); border: 1px solid var(--line); }
+  .sel-outro { background: var(--tag); color: var(--ink); border: 1px dashed var(--line); }
   .tabela { width: 100%; border-collapse: collapse; background: var(--panel); }
   .tabela th { text-align: left; font-size: .85rem; color: var(--muted); padding: 8px; border-bottom: 1px solid var(--line); }
   .tabela td { padding: 8px; border-bottom: 1px solid var(--line); vertical-align: top; }

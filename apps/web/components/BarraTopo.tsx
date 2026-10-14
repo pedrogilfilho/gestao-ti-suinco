@@ -4,12 +4,14 @@ import { NOMES_PAPEL } from '@gestao/shared';
 import { useEu } from '@/lib/sessao';
 import { BotaoTema } from './BotaoTema';
 import { BotaoSair } from './BotaoSair';
+import { BuscaGeral } from './BuscaGeral';
 
 export function BarraTopo({ esquerda }: { esquerda?: ReactNode }) {
   const { eu } = useEu();
   return (
     <header className="flex flex-wrap items-center gap-2 border-b border-[var(--line)] bg-[var(--panel)] px-4 py-2">
       {esquerda}
+      {eu?.equipeTI && <BuscaGeral />}
       <div className="flex-1" />
       <BotaoTema />
       {eu && (

@@ -14,8 +14,7 @@ O sistema atual continua no ar até a reescrita cobrir tudo. A migração é fei
 | API: avisos em tempo real (Socket.IO) | pronto |
 | Script de importação do backup do sistema atual | pronto |
 | Telas (Next.js): base, login, menu, tema | pronto |
-| Telas: Equipamentos, Usuários, Setores, Em uso | pronto |
-| Telas: Acessos, Auditoria, Configurações, Portal | a fazer |
+| Telas: Equipamentos, Usuários, Setores, Em uso, Acessos, Auditoria, Configurações, Portal, busca geral | pronto |
 | Docker de produção (Caddy + Postgres + API + web) | pronto |
 
 O que cada teste do sistema atual vira aqui está em [`PARIDADE.md`](PARIDADE.md).
