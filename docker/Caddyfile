@@ -1,0 +1,14 @@
+# Um endereço só: /api e /socket.io vão para o Nest; o resto, para as telas.
+# DOMINIO=":80" serve em HTTP simples (rede interna); com um domínio (ex.: ti.suinco.com.br) o Caddy faz HTTPS sozinho.
+{$DOMINIO::80} {
+	encode gzip
+	handle /api/* {
+		reverse_proxy api:3001
+	}
+	handle /socket.io/* {
+		reverse_proxy api:3001
+	}
+	handle {
+		reverse_proxy web:3000
+	}
+}

@@ -1,0 +1,12 @@
+**/node_modules
+**/.next
+**/dist
+**/.turbo
+**/.env
+**/.arquivos-*
+**/arquivos
+**/test-results
+**/playwright-report
+.superpowers
+.git
+docker/backups

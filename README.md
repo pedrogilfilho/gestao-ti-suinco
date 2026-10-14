@@ -13,8 +13,9 @@ O sistema atual continua no ar até a reescrita cobrir tudo. A migração é fei
 | API: empréstimos e devoluções, auditoria com restaurar, configurações, busca | pronto |
 | API: avisos em tempo real (Socket.IO) | pronto |
 | Script de importação do backup do sistema atual | pronto |
-| Telas (Next.js) | a fazer |
-| Docker de produção (Caddy + Postgres + API + web) | a fazer |
+| Telas (Next.js): base, login, menu, tema | pronto |
+| Telas: Equipamentos, Usuários, Setores, Em uso, Acessos, Auditoria, Configurações, Portal | a fazer |
+| Docker de produção (Caddy + Postgres + API + web) | pronto |
 
 O que cada teste do sistema atual vira aqui está em [`PARIDADE.md`](PARIDADE.md).
 
@@ -22,9 +23,9 @@ O que cada teste do sistema atual vira aqui está em [`PARIDADE.md`](PARIDADE.md
 
 ```
 apps/api          NestJS + Prisma (toda a regra de negócio e as permissões)
-apps/web          Next.js (telas) — ainda não criado
+apps/web          Next.js (telas)
 packages/shared   permissões, esquemas zod, constantes e cálculos usados pela API e pelas telas
-docker/           compose de desenvolvimento (Postgres)
+docker/           compose de desenvolvimento (Postgres) e de produção (Caddy, Postgres, API, web)
 ```
 
 ## Requisitos

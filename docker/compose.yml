@@ -1,0 +1,59 @@
+# Produção (VPS de desenvolvimento e, depois, a VM da Suinco).
+# Uso, na raiz do repositório: docker compose -f docker/compose.yml --env-file .env up -d --build
+# No .env de produção: PG_SENHA, JWT_SECRET, DONOS e, se houver, DOMINIO (sem ele, HTTP na porta 80).
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "${PORTA_HTTP:-80}:80"
+      - "${PORTA_HTTPS:-443}:443"
+    environment:
+      DOMINIO: "${DOMINIO:-:80}"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+    depends_on: [api, web]
+
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: gestao
+      POSTGRES_PASSWORD: "${PG_SENHA:?defina PG_SENHA no .env}"
+      POSTGRES_DB: gestao
+      TZ: America/Sao_Paulo
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./backups:/backups
+      - ./backup.sh:/backup.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gestao"]
+      interval: 5s
+      retries: 20
+
+  api:
+    build: { context: .., dockerfile: apps/api/Dockerfile }
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: "postgresql://gestao:${PG_SENHA}@postgres:5432/gestao"
+      JWT_SECRET: "${JWT_SECRET:?defina JWT_SECRET no .env}"
+      DONOS: "${DONOS:?defina DONOS no .env}"
+      ARQUIVOS_DIR: /arquivos
+      NODE_ENV: production
+      TZ: America/Sao_Paulo
+    volumes:
+      - arquivos:/arquivos
+    depends_on:
+      postgres: { condition: service_healthy }
+
+  web:
+    build: { context: .., dockerfile: apps/web/Dockerfile }
+    restart: unless-stopped
+    environment:
+      TZ: America/Sao_Paulo
+
+volumes:
+  pgdata: {}
+  arquivos: {}
+  caddy_data: {}

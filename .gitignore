@@ -10,3 +10,5 @@ test-results
 .turbo
 .superpowers/
 *.tsbuildinfo
+docker/backups/
+.arquivos-e2e/

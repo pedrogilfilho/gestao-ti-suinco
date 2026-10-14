@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+/* Cores do sistema atual (v4.3.0), para manter a mesma identidade. */
+:root {
+  --bg: #E9EDF1; --panel: #FFFFFF; --ink: #18232E; --muted: #5B6B7A; --line: #C9D2DB;
+  --steel: #2F5D8A; --steel-ink: #FFFFFF; --ok: #2E7D5B; --warn: #B8730F; --late: #B3402E;
+  --tag: #F6F8FA; --info: #0E7490; --extrav: #6D28D9;
+  --sel-m-bg: #1B3F66; --sel-m-ink: #FFFFFF; --sel-t-bg: #2F6FB0; --sel-t-ink: #FFFFFF; --sel-s-bg: #E1E7ED; --sel-s-ink: #3A4856;
+  --cat1: #0F766E; --cat2: #7E22CE; --cat3: #BE185D; --cat4: #4338CA; --cat5: #A16207;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141B22; --panel: #1C252F; --ink: #E4EAF0; --muted: #93A3B3; --line: #33414F;
+    --steel: #6E9BC8; --steel-ink: #0E1620; --ok: #5DBB92; --warn: #E3A341; --late: #E2735F;
+    --tag: #222D38; --info: #4FD1C5; --extrav: #C4B5FD;
+    --sel-m-bg: #2B5A8C; --sel-m-ink: #FFFFFF; --sel-t-bg: #6E9BC8; --sel-t-ink: #0E1620; --sel-s-bg: #33414F; --sel-s-ink: #D5DEE7;
+    --cat1: #5EEAD4; --cat2: #D8B4FE; --cat3: #F9A8D4; --cat4: #A5B4FC; --cat5: #FCD34D;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141B22; --panel: #1C252F; --ink: #E4EAF0; --muted: #93A3B3; --line: #33414F;
+  --steel: #6E9BC8; --steel-ink: #0E1620; --ok: #5DBB92; --warn: #E3A341; --late: #E2735F;
+  --tag: #222D38; --info: #4FD1C5; --extrav: #C4B5FD;
+  --sel-m-bg: #2B5A8C; --sel-m-ink: #FFFFFF; --sel-t-bg: #6E9BC8; --sel-t-ink: #0E1620; --sel-s-bg: #33414F; --sel-s-ink: #D5DEE7;
+  --cat1: #5EEAD4; --cat2: #D8B4FE; --cat3: #F9A8D4; --cat4: #A5B4FC; --cat5: #FCD34D;
+  color-scheme: dark;
+}
+
+body { background: var(--bg); color: var(--ink); font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+
+@layer components {
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px; }
+  .meta { color: var(--muted); font-size: .9rem; }
+  .campo { display: block; width: 100%; margin-top: 4px; background: var(--panel); color: var(--ink); border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; }
+  .campo:focus { outline: 2px solid var(--steel); outline-offset: 1px; }
+  .rotulo { display: block; font-weight: 600; font-size: .92rem; }
+  .btn { background: var(--steel); color: var(--steel-ink); border: 0; border-radius: 6px; padding: 9px 14px; font-weight: 600; cursor: pointer; }
+  .btn:disabled { opacity: .55; cursor: not-allowed; }
+  .btn.ghost { background: transparent; color: var(--steel); border: 1px solid var(--line); }
+  .btn.perigo { background: var(--late); color: #fff; }
+  .link { background: none; border: 0; color: var(--steel); cursor: pointer; text-decoration: underline; padding: 0; }
+  .chip { background: var(--panel); border: 1px solid var(--line); border-radius: 99px; padding: 6px 14px; min-height: 38px; cursor: pointer; font-weight: 600; color: var(--ink); }
+  .chip.ativo { background: var(--steel); color: var(--steel-ink); border-color: var(--steel); }
+  .chip.ok.ativo { background: var(--ok); border-color: var(--ok); color: #fff; }
+  .chip.out.ativo { background: var(--steel); border-color: var(--steel); }
+  .chip.warn.ativo { background: var(--warn); border-color: var(--warn); color: #fff; }
+  .chip.late.ativo { background: var(--late); border-color: var(--late); color: #fff; }
+  .chip.ok { color: var(--ok); } .chip.warn { color: var(--warn); } .chip.late { color: var(--late); }
+  .selo { display: inline-block; font-size: .82rem; font-weight: 600; padding: 2px 8px; border-radius: 99px; border: 1px solid currentColor; white-space: nowrap; }
+  .selo.ok { color: var(--ok); } .selo.out { color: var(--steel); } .selo.warn { color: var(--warn); } .selo.late { color: var(--late); }
+  .sel-master { background: var(--sel-m-bg); color: var(--sel-m-ink); border-color: transparent; }
+  .sel-tic { background: var(--sel-t-bg); color: var(--sel-t-ink); border-color: transparent; }
+  .sel-solic { background: var(--sel-s-bg); color: var(--sel-s-ink); border-color: transparent; }
+  .sel-consulta { background: transparent; color: var(--muted); border: 1px solid var(--line); }
+  .tabela { width: 100%; border-collapse: collapse; background: var(--panel); }
+  .tabela th { text-align: left; font-size: .85rem; color: var(--muted); padding: 8px; border-bottom: 1px solid var(--line); }
+  .tabela td { padding: 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+}

@@ -1,13 +1,11 @@
-// Dados de desenvolvimento: 4 perfis, 2 setores e alguns equipamentos. Roda no `prisma migrate reset`.
+// Dados de desenvolvimento: 4 perfis, 2 setores e alguns equipamentos. Roda no `prisma migrate reset` e no preparo dos testes de tela.
 import { PrismaClient, type Papel } from '@prisma/client';
 import argon2 from 'argon2';
 import { PADRAO_TIC } from '@gestao/shared';
 
-const db = new PrismaClient();
-const senha = process.env.SEED_SENHA ?? 'Teste@1234';
 const permissoes = (l: string[]) => Object.fromEntries(l.map((p) => [p, true]));
 
-async function main() {
+export async function semear(db: PrismaClient, senha = process.env.SEED_SENHA ?? 'Teste@1234') {
   const ti = await db.setor.create({ data: { nome: 'TI' } });
   const adm = await db.setor.create({ data: { nome: 'Administrativo' } });
   const hash = await argon2.hash(senha, { type: argon2.argon2id });
@@ -28,4 +26,7 @@ async function main() {
   await db.equipamento.create({ data: { codigo: 'DESK-01', tipo: 'Desktop', setorId: ti.id } });
 }
 
-main().finally(() => db.$disconnect());
+if (require.main === module) {
+  const db = new PrismaClient();
+  semear(db).finally(() => db.$disconnect());
+}
