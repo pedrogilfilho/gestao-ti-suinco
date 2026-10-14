@@ -2,7 +2,7 @@
 
 Cada teste do app atual (`claude-code-export/testes/s*.js`, 87 arquivos) com o que verifica, o módulo da reescrita e o destino. Módulos: 1 núcleo · 2 reservas e pedidos · 3 termos · 4 ramais e telefonia · 5 almoxarifado · 6 dashboard, histórico, relatórios e exportação · 7 migração.
 
-Destino do núcleo: o arquivo de teste novo (`api:` = `apps/api/test/*.e2e-spec.ts`, `shared:` = `packages/shared/src/*.test.ts`, `web:` = `apps/web/e2e/*.spec.ts`). A Tarefa 20 confere cada linha do módulo 1.
+Destino do núcleo: o arquivo de teste novo (`api:` = `apps/api/test/*.e2e-spec.ts`, `shared:` = `packages/shared/src/*.test.ts`, `web:` = `apps/web/e2e/*.spec.ts`). Conferido na Tarefa 20 (14/10/2026): todo destino do módulo 1 aponta para um arquivo de teste que existe. Itens marcados **adiado** ainda não entraram e estão anotados para depois do núcleo.
 
 | Teste atual | O que verifica | Módulo | Regra do spec | Destino |
 |---|---|---|---|---|
@@ -23,7 +23,7 @@ Destino do núcleo: o arquivo de teste novo (`api:` = `apps/api/test/*.e2e-spec.
 | sDevolTest.js / sDevolTest2.js | rascunhos de depuração da devolução (sem verificação) | — | — | não se aplica: não verificam nada |
 | sDono.js | dono protegido contra outro Master; o próprio dono | 1 | 4.9 | api: acessos |
 | sE.js | usuários (validações, e-mail completado com o domínio, telefone) e setores (repetido sem maiúsculas e **sem acento**) | 1 | 4.7, 4.8 | api: pessoas, setores · shared: esquemas |
-| sEqLivres.js | Equipamentos: fileira "sem uso" por tipo, sem virar emprestável | 1 | 4.6 | web: equipamentos |
+| sEqLivres.js | Equipamentos: fileira "sem uso" por tipo, sem virar emprestável | 1 | 4.6 | **adiado**: fileira "sem uso" por tipo ainda não existe na tela (filtro Disponível cobre a consulta) |
 | sEquipCC.js | centro de custo vira lista de setores; valor antigo não some | 1 / 7 | 4.6 | api: equipamentos · importação (valor antigo → obs + aviso) |
 | sEquipIp.js | IP só para tipos com IP; DHCP/fixo; trocar para DHCP apaga o IP; IP no cadastro em massa | 1 | 4.6 | shared: esquemas · api: equipamentos |
 | sEquipLinha.js | telefones corporativo/particular com caixa; desmarcar apaga; antigo só com número vira corporativo | 1 / 7 | 4.6 | web: equipamentos · importação |

@@ -44,8 +44,10 @@ pnpm db:up                                              # Postgres em localhost:
 pnpm --filter @gestao/shared build
 pnpm --filter @gestao/api exec prisma migrate dev       # cria as tabelas
 pnpm --filter @gestao/api seed                          # dados de exemplo (só em banco vazio)
-pnpm --filter @gestao/api dev                           # API em http://localhost:3001/api
+pnpm dev                                                # API em http://localhost:3001/api e telas em http://localhost:3000
 ```
+
+Abra http://localhost:3000 e entre com um dos usuários do seed abaixo.
 
 Para apagar o banco de desenvolvimento e começar do zero: `pnpm --filter @gestao/api exec prisma migrate reset` (apaga tudo e roda o seed de novo).
 
@@ -86,6 +88,27 @@ pnpm --filter @gestao/api typecheck      # checa os tipos de src, scripts e test
 ```
 
 Os testes de integração rodam um arquivo de cada vez, cada um com o banco limpo. O Docker Desktop precisa estar aberto.
+
+Testes de tela (Playwright, Chromium):
+
+```bash
+pnpm --filter @gestao/web exec playwright test
+```
+
+Eles sobem sozinhos a API (porta 3101) e as telas (porta 3100) usando o banco `gestao_e2e` no mesmo Postgres de desenvolvimento (`pnpm db:up` antes). O banco é recriado com o seed a cada execução; o script se recusa a mexer em banco cujo nome não termine em `_e2e`.
+
+## Subir em produção
+
+Num servidor com Docker:
+
+```bash
+cp .env.example .env    # preencher PG_SENHA, JWT_SECRET, DONOS e, se houver, DOMINIO
+docker compose -f docker/compose.yml up -d --build
+```
+
+O Caddy fica na frente: `/api` e `/socket.io` vão para a API e o resto para as telas. Com `DOMINIO` preenchido ele pega o certificado HTTPS sozinho; sem ele, serve HTTP na porta 80. As migrações rodam ao subir a API. Depois, importar o backup (seção acima) e entrar com o dono usando a senha temporária mostrada na importação. `docker/backup.sh` faz o backup diário do banco (guardado 30 dias); o agendamento no cron está explicado no próprio arquivo.
+
+**Não publicar em servidor nenhum sem o pedido do Gerson.**
 
 ## Variáveis de ambiente
 
