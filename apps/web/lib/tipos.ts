@@ -19,3 +19,10 @@ export const dataHoraBR = (s: string | null | undefined) =>
   s ? new Date(s).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', dateStyle: 'short', timeStyle: 'short' }) : '';
 // colunas @db.Date chegam como meia-noite UTC: mostrar a data sem converter o fuso
 export const diaBR = (s: string | null | undefined) => (s ? s.slice(0, 10).split('-').reverse().join('/') : '');
+
+export type Pessoa = {
+  id: string; nome: string; email: string; setorId: string; setor: { id: string; nome: string };
+  telefoneCorp: string | null; telefonePart: string | null; login: string; ativo: boolean; limites: Record<string, number>;
+  acesso: { id: string; papel: string } | null; equipamentos: { id: string; codigo: string; tipo: string }[];
+  temAssinatura: boolean; temFoto: boolean; tecnico: boolean; exclusaoTravada: string | null;
+};
