@@ -43,3 +43,8 @@ export class ArquivosService {
     return id;
   }
 }
+
+// Envia um arquivo já validado por ArquivosService.caminho() (que impede sair da pasta).
+// dotfiles: a pasta de arquivos pode ter ponto no nome (ex.: .arquivos-teste).
+export const enviarArquivo = (res: import('express').Response, caminho: string) =>
+  res.sendFile(caminho, { dotfiles: 'allow', headers: { 'Cache-Control': 'private, max-age=300' } });
