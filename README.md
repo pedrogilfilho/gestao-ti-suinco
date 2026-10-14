@@ -12,7 +12,7 @@ O sistema atual continua no ar até a reescrita cobrir tudo. A migração é fei
 | API: login, setores, usuários, equipamentos, acessos e grupos | pronto |
 | API: empréstimos e devoluções, auditoria com restaurar, configurações, busca | pronto |
 | API: avisos em tempo real (Socket.IO) | pronto |
-| Script de importação do backup do sistema atual | a fazer |
+| Script de importação do backup do sistema atual | pronto |
 | Telas (Next.js) | a fazer |
 | Docker de produção (Caddy + Postgres + API + web) | a fazer |
 
@@ -61,12 +61,27 @@ Senha de todos: `Teste@1234` (ou a de `SEED_SENHA` no `.env`).
 | consulta.teste@suinco.com.br | Somente consulta |
 | solicitante.teste@suinco.com.br | Solicitante |
 
+## Importar os dados do sistema atual
+
+Usa o arquivo de **Configurações → Baixar backup completo** do sistema atual. A importação só roda num banco vazio e traz o núcleo: setores, usuários, fotos, grupos, acessos, equipamentos, empréstimos e a configuração.
+
+```bash
+pnpm --filter @gestao/api importar -- caminho/do/backup.json --ensaio   # faz tudo e desfaz: só mostra o relatório
+pnpm --filter @gestao/api importar -- caminho/do/backup.json            # grava de verdade
+```
+
+- Rode sempre primeiro com `--ensaio` e leia o relatório inteiro. Ele lista o que foi criado, o que ficou de fora (com o motivo) e os avisos.
+- O relatório também é salvo em `relatorio-importacao-<data>.txt`, ao lado do backup.
+- Campos antigos que não têm lugar no modelo novo vão para as Observações do equipamento, com aviso.
+- Ninguém recebe senha na importação, exceto os donos (`DONOS`). Eles recebem uma senha temporária que aparece só na tela e são obrigados a trocá-la no primeiro login. Os outros acessos recebem senha pela tela de Acessos.
+
 ## Testes
 
 ```bash
 pnpm --filter @gestao/shared test        # unitários do pacote compartilhado
 pnpm --filter @gestao/api test:unit      # unitários da API
 pnpm --filter @gestao/api test:e2e       # integração: sobe um Postgres próprio em container
+pnpm --filter @gestao/api typecheck      # checa os tipos de src, scripts e testes
 ```
 
 Os testes de integração rodam um arquivo de cada vez, cada um com o banco limpo. O Docker Desktop precisa estar aberto.

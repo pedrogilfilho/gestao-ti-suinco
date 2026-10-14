@@ -6,6 +6,7 @@
     "build": "nest build",
     "test": "vitest run && vitest run -c vitest.e2e.config.ts",
     "test:unit": "vitest run",
+    "typecheck": "tsc -p tsconfig.check.json",
     "test:e2e": "vitest run -c vitest.e2e.config.ts",
     "prisma:migrate": "prisma migrate dev",
     "seed": "tsx prisma/seed.ts",

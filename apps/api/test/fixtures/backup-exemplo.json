@@ -1,0 +1,41 @@
+{
+  "geradoEm": "2026-10-14T12:00:00.000Z",
+  "config": {
+    "tiposEmprestaveis": ["Notebook de empréstimo"],
+    "acessorios": ["Carregador", "Mouse", "Bolsa"],
+    "finalidades": [{ "nome": "Viagem", "dias": 3, "hora": "17:00" }, { "nome": "Outra", "dias": 0, "hora": "17:00" }],
+    "assinaturas": true,
+    "glpiUrl": "https://glpi.suinco.test/ticket?id=",
+    "avisoMin": 90,
+    "expOn": true,
+    "gruposAcesso": [{ "id": "g-suporte", "nome": "Suporte N1", "perms": { "emprestar": true, "reservar": true } }]
+  },
+  "setores": [{ "id": "s1", "nome": "TI" }, { "id": "s2", "nome": "Financeiro" }],
+  "usuarios": [
+    { "id": "  Ana.Souza@Suinco.com.br ", "nome": "Ana Souza", "setor": "Financeiro", "telefone": "34999990001", "tecnico": false },
+    { "id": "tec@suinco.com.br", "nome": "Técnico Um", "setor": "TI", "tecnico": true, "assinatura": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==" },
+    { "id": "beto@suinco.com.br", "nome": "Beto Lima", "setor": "Setor Velho", "limiteExtra": true, "limites": { "Notebook de empréstimo": 2 } }
+  ],
+  "acessos": [
+    { "id": "tec@suinco.com.br", "papel": "tecnico", "permissoes": { "emprestar": true, "equipamentos": true } },
+    { "id": "ana.souza@suinco.com.br", "papel": "grupo", "grupo": "g-suporte", "permissoes": { "emprestar": true } },
+    { "id": "dono@suinco.com.br", "papel": "admin", "nome": "Dono do App", "setor": "TI" }
+  ],
+  "fotos": [{ "id": "ana.souza@suinco.com.br", "foto": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/wAALCAABAAEBAREA/8QAFAABAAAAAAAAAAAAAAAAAAAACf/EABQQAQAAAAAAAAAAAAAAAAAAAAD/2gAIAQEAAD8AKp//2Q==" }],
+  "equipamentos": [
+    { "id": "NB-01", "tipo": "Notebook de empréstimo", "modelo": "Dell Latitude", "situacao": "ativo" },
+    { "id": "CEL-01", "tipo": "Celular", "atribuidoA": "Ana Souza", "atribuidoEmail": "ANA.SOUZA@suinco.com.br", "atribuidoEm": 1760000000000, "numero": "(34) 99999-0001" },
+    { "id": "DESK-01", "tipo": "Desktop", "ipTipo": "fixo", "ip": "10.0.0.9", "centroCusto": "TI", "termoAssinado": true },
+    { "id": "CEL-OLD", "tipo": "Celular", "comCelular": "sim", "responsavel": "Fulano", "atribuidoA": "Beto Lima" }
+  ],
+  "emprestimos": [
+    { "id": "EMP-0001", "equipamento": "NB-01", "email": "ana.souza@suinco.com.br", "colaborador": "Ana Souza", "tecnico": "Técnico Um", "tecnicoEmail": "tec@suinco.com.br",
+      "finalidade": "Viagem", "chamado": "43150", "dataEmprestimo": "2026-10-10", "horaEmprestimo": "09:00", "dataPrevisao": "2026-10-13", "horaPrevisao": "17:00",
+      "dataDevolucao": "", "acessorios": ["Carregador"], "assinaturaEmprestimo": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==", "log": [{ "em": 1, "txt": "criado" }] },
+    { "id": "EMP-0000", "equipamento": "NB-01", "email": "beto@suinco.com.br", "tecnicoEmail": "tec@suinco.com.br", "finalidade": "Treinamento",
+      "dataEmprestimo": "2026-09-01", "horaEmprestimo": "08:00", "dataPrevisao": "2026-09-01", "horaPrevisao": "18:00", "dataDevolucao": "2026-09-01", "horaDevolucao": "17:40",
+      "acessorios": ["Carregador", "Mouse"], "acessoriosDevolvidos": ["Carregador"], "acessoriosFaltando": ["Mouse"], "assinaturaEmprestimo": "SIM", "assinaturaDevolucao": "SIM" },
+    { "id": "EMP-0099", "equipamento": "NB-01", "email": "ninguem@suinco.com.br", "dataEmprestimo": "2026-08-01" }
+  ],
+  "reservas": [], "pedidos": [], "ramais": [], "consumiveis": [], "almoxarifado": [], "movimentacoes_almoxarifado": []
+}
