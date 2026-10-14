@@ -1,0 +1,49 @@
+{
+  "name": "@gestao/api",
+  "private": true,
+  "scripts": {
+    "dev": "nest start --watch",
+    "build": "nest build",
+    "test": "vitest run && vitest run -c vitest.e2e.config.ts",
+    "test:unit": "vitest run",
+    "test:e2e": "vitest run -c vitest.e2e.config.ts",
+    "prisma:migrate": "prisma migrate dev",
+    "seed": "tsx prisma/seed.ts",
+    "importar": "tsx scripts/importar-backup.ts"
+  },
+  "prisma": { "seed": "tsx prisma/seed.ts" },
+  "dependencies": {
+    "@gestao/shared": "workspace:*",
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/core": "^11.0.0",
+    "@nestjs/platform-express": "^11.0.0",
+    "@nestjs/jwt": "^11.0.0",
+    "@nestjs/websockets": "^11.0.0",
+    "@nestjs/platform-socket.io": "^11.0.0",
+    "@prisma/client": "^6.0.0",
+    "argon2": "^0.41.0",
+    "cookie": "^1.0.0",
+    "cookie-parser": "^1.4.7",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1",
+    "socket.io": "^4.8.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^11.0.0",
+    "@nestjs/testing": "^11.0.0",
+    "@testcontainers/postgresql": "^10.13.0",
+    "@types/cookie-parser": "^1.4.7",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.0.0",
+    "@types/supertest": "^6.0.2",
+    "prisma": "^6.0.0",
+    "socket.io-client": "^4.8.0",
+    "supertest": "^7.0.0",
+    "tsx": "^4.19.0",
+    "unplugin-swc": "^1.5.1",
+    "@swc/core": "^1.7.0",
+    "vitest": "^3.0.0",
+    "typescript": "^5.6.0"
+  }
+}

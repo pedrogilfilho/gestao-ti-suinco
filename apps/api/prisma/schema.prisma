@@ -1,0 +1,202 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Papel {
+  master
+  tic
+  consulta
+  solicitante
+}
+
+enum SituacaoEquip {
+  ativo
+  manutencao
+  danificado
+  extraviado
+  baixado
+}
+
+enum IpTipo {
+  dhcp
+  fixo
+}
+
+enum TermoStatus {
+  assinado
+  nao_assinado
+  nao_informado
+}
+
+model Setor {
+  id           String        @id @default(uuid()) @db.Uuid
+  nome         String
+  criadoEm     DateTime      @default(now()) @map("criado_em") @db.Timestamptz
+  atualizadoEm DateTime      @updatedAt @map("atualizado_em") @db.Timestamptz
+  excluidoEm   DateTime?     @map("excluido_em") @db.Timestamptz
+  pessoas      Pessoa[]
+  equipamentos Equipamento[]
+
+  @@map("setor")
+}
+
+model Pessoa {
+  id            String       @id @default(uuid()) @db.Uuid
+  nome          String
+  email         String
+  setorId       String       @map("setor_id") @db.Uuid
+  setor         Setor        @relation(fields: [setorId], references: [id])
+  telefoneCorp  String?      @map("telefone_corp")
+  telefonePart  String?      @map("telefone_part")
+  login         String       @default("")
+  ativo         Boolean      @default(true)
+  assinaturaUrl String?      @map("assinatura_url")
+  fotoUrl       String?      @map("foto_url")
+  limites       Json         @default("{}")
+  criadoEm      DateTime     @default(now()) @map("criado_em") @db.Timestamptz
+  atualizadoEm  DateTime     @updatedAt @map("atualizado_em") @db.Timestamptz
+  excluidoEm    DateTime?    @map("excluido_em") @db.Timestamptz
+  acesso        Acesso?
+  equipamentos  Equipamento[]
+  emprestimos   Emprestimo[] @relation("tomador")
+  entregas      Emprestimo[] @relation("tecnico")
+
+  @@map("pessoa")
+}
+
+model GrupoAcesso {
+  id         String   @id @default(uuid()) @db.Uuid
+  nome       String   @unique
+  permissoes Json     @default("{}")
+  acessos    Acesso[]
+
+  @@map("grupo_acesso")
+}
+
+model Acesso {
+  id            String           @id @default(uuid()) @db.Uuid
+  pessoaId      String           @unique @map("pessoa_id") @db.Uuid
+  pessoa        Pessoa           @relation(fields: [pessoaId], references: [id])
+  papel         Papel
+  grupoId       String?          @map("grupo_id") @db.Uuid
+  grupo         GrupoAcesso?     @relation(fields: [grupoId], references: [id])
+  permissoes    Json             @default("{}")
+  suspenso      Boolean          @default(false)
+  revogadoEm    DateTime?        @map("revogado_em") @db.Timestamptz
+  ultimoLoginEm DateTime?        @map("ultimo_login_em") @db.Timestamptz
+  criadoEm      DateTime         @default(now()) @map("criado_em") @db.Timestamptz
+  credencial    CredencialLocal?
+
+  @@map("acesso")
+}
+
+model CredencialLocal {
+  acessoId             String  @id @map("acesso_id") @db.Uuid
+  acesso               Acesso  @relation(fields: [acessoId], references: [id], onDelete: Cascade)
+  senhaHash            String  @map("senha_hash")
+  trocarNoProximoLogin Boolean @default(true) @map("trocar_no_proximo_login")
+
+  @@map("credencial_local")
+}
+
+model TentativaLogin {
+  email      String    @id
+  erros      Int       @default(0)
+  travadoAte DateTime? @map("travado_ate") @db.Timestamptz
+
+  @@map("tentativa_login")
+}
+
+model Equipamento {
+  id              String        @id @default(uuid()) @db.Uuid
+  codigo          String
+  tipo            String
+  modelo          String        @default("")
+  patrimonio      String        @default("")
+  serie           String        @default("")
+  situacao        SituacaoEquip @default(ativo)
+  somenteCadastro Boolean       @default(false) @map("somente_cadastro")
+  pessoaId        String?       @map("pessoa_id") @db.Uuid
+  pessoa          Pessoa?       @relation(fields: [pessoaId], references: [id])
+  vinculoLivre    String        @default("") @map("vinculo_livre")
+  vinculadoEm     DateTime?     @map("vinculado_em") @db.Timestamptz
+  setorId         String?       @map("setor_id") @db.Uuid
+  setor           Setor?        @relation(fields: [setorId], references: [id])
+  ipTipo          IpTipo?       @map("ip_tipo")
+  ip              String?
+  mac             String?
+  numeroCorp      String?       @map("numero_corp")
+  numeroPart      String?       @map("numero_part")
+  tipoChip        String        @default("") @map("tipo_chip")
+  termoStatus     TermoStatus   @default(nao_informado) @map("termo_status")
+  termoObs        String        @default("") @map("termo_obs")
+  garantiaAte     DateTime?     @map("garantia_ate") @db.Date
+  predio          String        @default("")
+  pontoRede       String        @default("") @map("ponto_rede")
+  firmware        String        @default("")
+  trocasCabeca    Int?          @map("trocas_cabeca")
+  licencas        Json          @default("[]")
+  dataAtivacao    DateTime?     @map("data_ativacao") @db.Date
+  obs             String        @default("")
+  criadoEm        DateTime      @default(now()) @map("criado_em") @db.Timestamptz
+  atualizadoEm    DateTime      @updatedAt @map("atualizado_em") @db.Timestamptz
+  excluidoEm      DateTime?     @map("excluido_em") @db.Timestamptz
+  emprestimos     Emprestimo[]
+
+  @@map("equipamento")
+}
+
+model Emprestimo {
+  id                     String      @id @default(uuid()) @db.Uuid
+  equipamentoId          String      @map("equipamento_id") @db.Uuid
+  equipamento            Equipamento @relation(fields: [equipamentoId], references: [id])
+  pessoaId               String      @map("pessoa_id") @db.Uuid
+  pessoa                 Pessoa      @relation("tomador", fields: [pessoaId], references: [id])
+  tecnicoId              String?     @map("tecnico_id") @db.Uuid
+  tecnico                Pessoa?     @relation("tecnico", fields: [tecnicoId], references: [id])
+  finalidade             String
+  finalidadeOutra        String      @default("") @map("finalidade_outra")
+  chamadoGlpi            String      @default("") @map("chamado_glpi")
+  retiradaEm             DateTime    @map("retirada_em") @db.Timestamptz
+  previsaoEm             DateTime?   @map("previsao_em") @db.Timestamptz
+  devolvidoEm            DateTime?   @map("devolvido_em") @db.Timestamptz
+  acessorios             Json        @default("[]")
+  acessoriosDevolvidos   Json        @default("[]") @map("acessorios_devolvidos")
+  acessoriosFaltando     Json        @default("[]") @map("acessorios_faltando")
+  assinaturaRetiradaUrl  String?     @map("assinatura_retirada_url")
+  assinaturaDevolucaoUrl String?     @map("assinatura_devolucao_url")
+  obs                    String      @default("")
+  obsDevolucao           String      @default("") @map("obs_devolucao")
+  criadoEm               DateTime    @default(now()) @map("criado_em") @db.Timestamptz
+  atualizadoEm           DateTime    @updatedAt @map("atualizado_em") @db.Timestamptz
+  excluidoEm             DateTime?   @map("excluido_em") @db.Timestamptz
+
+  @@map("emprestimo")
+}
+
+model Auditoria {
+  id     String   @id @default(uuid()) @db.Uuid
+  em     DateTime @default(now()) @db.Timestamptz
+  atorId String?  @map("ator_id") @db.Uuid
+  acao   String
+  area   String
+  itemId String?  @map("item_id")
+  antes  Json?
+  depois Json?
+
+  @@index([area, em])
+  @@index([itemId])
+  @@map("auditoria")
+}
+
+model Config {
+  chave String @id
+  valor Json
+
+  @@map("config")
+}
