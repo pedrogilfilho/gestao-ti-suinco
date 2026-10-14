@@ -9,11 +9,12 @@ import { EmprestimosModule } from './emprestimos/emprestimos.module';
 import { AuditoriaModule } from './auditoria/auditoria.module';
 import { ConfigModule } from './config/config.module';
 import { BuscaModule } from './busca/busca.module';
+import { TempoRealModule } from './tempo-real/tempo-real.module';
 
 @Module({
   imports: [
     ComumModule, AuthModule, SetoresModule, PessoasModule, EquipamentosModule,
-    AcessosModule, EmprestimosModule, AuditoriaModule, ConfigModule, BuscaModule,
+    AcessosModule, EmprestimosModule, AuditoriaModule, ConfigModule, BuscaModule, TempoRealModule,
   ],
 })
 export class AppModule {}
