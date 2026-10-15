@@ -14,3 +14,13 @@ export const FINALIDADES_PADRAO = [
   { nome: 'Viagem', dias: 3, hora: '17:00' }, { nome: 'Outra', dias: 0, hora: '17:00' },
 ];
 export const DOMINIO_EMAIL = '@suinco.com.br';
+
+// módulo 2
+export const MOTIVOS_RECUSA = [
+  'Nenhum equipamento disponível no período', 'Prazo de antecedência insuficiente', 'Pedido sem autorização do gestor',
+  'Chamado GLPI inválido ou não encontrado', 'Outro',
+] as const;
+export const STATUS_PEDIDO = ['pendente', 'aprovado', 'recusado', 'cancelado', 'entregue'] as const;
+export type StatusPedido = (typeof STATUS_PEDIDO)[number];
+export const STATUS_RESERVA = ['ativa', 'cancelada', 'retirada'] as const;
+export type StatusReserva = (typeof STATUS_RESERVA)[number];

@@ -1,4 +1,4 @@
-import type { SituacaoEquip } from './constantes.js';
+import type { SituacaoEquip, StatusReserva } from './constantes.js';
 import { diaSP, horaSP, diasEntre } from './datas.js';
 
 export type Situacao = { k: string; txt: string; cls: 'ok' | 'out' | 'warn' | 'late' };
@@ -35,4 +35,14 @@ export function situacaoEmprestimo(e: EmpParaSituacao, agora: Date, assinaturasL
   }
   if (diaSP(e.previsaoEm) === diaSP(agora)) return { k: 'aberto', txt: `Vence hoje às ${horaSP(e.previsaoEm)}`, cls: 'warn' };
   return { k: 'aberto', txt: 'Emprestado', cls: 'out' };
+}
+
+// Reserva: some de "Próximas" quando passa o dia (de Brasília) da retirada sem registrar a retirada.
+export function situacaoReserva(r: { status: StatusReserva; inicioEm: Date }, agora: Date): Situacao {
+  if (r.status === 'retirada') return { k: 'retirada', txt: 'Retirada (empréstimo)', cls: 'ok' };
+  if (r.status === 'cancelada') return { k: 'cancelada', txt: 'Cancelada', cls: 'late' };
+  const hoje = diaSP(agora), dia = diaSP(r.inicioEm);
+  if (hoje > dia) return { k: 'naoret', txt: 'Não retirada', cls: 'warn' };
+  if (hoje === dia) return { k: 'hoje', txt: 'Hoje', cls: 'warn' };
+  return { k: 'reservada', txt: 'Reservada', cls: 'out' };
 }

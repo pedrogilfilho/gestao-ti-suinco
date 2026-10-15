@@ -6,3 +6,5 @@ export * from './emprestimo.js';
 export * from './acesso.js';
 export * from './config.js';
 export * from './login.js';
+export * from './pedido.js';
+export * from './reserva.js';
