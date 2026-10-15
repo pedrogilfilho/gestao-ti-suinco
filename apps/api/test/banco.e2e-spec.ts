@@ -4,7 +4,7 @@ import { PrismaClient } from '@prisma/client';
 const db = new PrismaClient();
 beforeAll(async () => { await db.$connect(); });
 beforeEach(async () => {
-  await db.$executeRawUnsafe('TRUNCATE auditoria, pedido_mensagem, emprestimo, reserva, pedido, equipamento, credencial_local, acesso, grupo_acesso, pessoa, setor, config, tentativa_login CASCADE');
+  await db.$executeRawUnsafe('TRUNCATE auditoria, termo_link, pedido_mensagem, emprestimo, reserva, pedido, equipamento, credencial_local, acesso, grupo_acesso, pessoa, setor, config, tentativa_login CASCADE');
 });
 afterAll(async () => { await db.$disconnect(); });
 
@@ -47,5 +47,13 @@ describe('banco', () => {
     const r = await db.reserva.create({ data: { equipamentoId: e1.id, pessoaId: p.id, inicioEm: new Date(), fimEm: new Date(Date.now() + 3_600_000) } });
     await db.emprestimo.create({ data: { equipamentoId: e1.id, pessoaId: p.id, finalidade: 'Viagem', retiradaEm: new Date(), reservaId: r.id } });
     await expect(db.emprestimo.create({ data: { equipamentoId: e2.id, pessoaId: p.id, finalidade: 'Viagem', retiradaEm: new Date(), reservaId: r.id } })).rejects.toThrow();
+  });
+
+  it('token do link do termo é único', async () => {
+    const s = await db.setor.create({ data: { nome: 'TI' } });
+    const p = await db.pessoa.create({ data: { nome: 'Ana', email: 'ana@suinco.com.br', setorId: s.id } });
+    const dados = { token: 'abc', pessoaId: p.id, texto: 'T' };
+    await db.termoLink.create({ data: dados });
+    await expect(db.termoLink.create({ data: dados })).rejects.toThrow();
   });
 });
