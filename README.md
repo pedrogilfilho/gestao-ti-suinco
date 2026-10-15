@@ -2,9 +2,9 @@
 
 Sistema interno da TI da Suinco: empréstimo e devolução de equipamentos, inventário, usuários e setores, acessos com perfis, auditoria e configurações. Esta é a reescrita do sistema atual (v4.3.0, em Firebase), agora em **Next.js + NestJS + PostgreSQL**.
 
-O sistema atual continua no ar até a reescrita cobrir tudo. A migração é feita por módulos, e este repositório está no **módulo 1 (núcleo)**.
+O sistema atual continua no ar até a reescrita cobrir tudo. A migração é feita por módulos. Prontos: **módulo 1 (núcleo)** e **módulo 2 (reservas e pedidos)**.
 
-## Andamento do núcleo
+## Andamento
 
 | Parte | Situação |
 |---|---|
@@ -16,6 +16,9 @@ O sistema atual continua no ar até a reescrita cobrir tudo. A migração é fei
 | Telas (Next.js): base, login, menu, tema | pronto |
 | Telas: Equipamentos, Usuários, Setores, Em uso, Acessos, Auditoria, Configurações, Portal, busca geral | pronto |
 | Docker de produção (Caddy + Postgres + API + web) | pronto |
+| **Módulo 2**: reservas (conflito de horário, registrar retirada) | pronto |
+| **Módulo 2**: pedidos do colaborador no portal (normal e urgente), conversa, análise pela TI (aprovar, entregar agora, recusar, lote, Kanban) | pronto |
+| **Módulo 2**: expediente e antecedência, alertas de entrega, contadores do menu, importação de reservas e pedidos | pronto |
 
 O que cada teste do sistema atual vira aqui está em [`PARIDADE.md`](PARIDADE.md).
 
@@ -129,3 +132,6 @@ O `.env` não vai para o repositório.
 - Excluir é exclusão lógica (`excluido_em`): o item some das telas e pode ser restaurado pela Auditoria.
 - Quem pode o quê é decidido só na API. As telas apenas escondem os botões.
 - Datas exibidas e "hoje" seguem o horário de Brasília.
+- Pedido de empréstimo é só do colaborador (perfil Solicitante): a TI não faz pedido, ela reserva ou empresta direto.
+- Expediente (Configurações → Atendimento da TI) e antecedência mínima valem só para os pedidos dos colaboradores.
+- Uma reserva ocupa o equipamento do início até a devolução prevista; terminar exatamente quando outra começa não é conflito.

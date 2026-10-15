@@ -17,14 +17,14 @@ type Registro = {
 };
 
 const AREAS: Opcao[] = [
-  { valor: 'emprestimos', rotulo: 'Empréstimos' }, { valor: 'equipamentos', rotulo: 'Equipamentos' }, { valor: 'pessoas', rotulo: 'Usuários' },
+  { valor: 'emprestimos', rotulo: 'Empréstimos' }, { valor: 'pedidos', rotulo: 'Pedidos' }, { valor: 'reservas', rotulo: 'Reservas' }, { valor: 'equipamentos', rotulo: 'Equipamentos' }, { valor: 'pessoas', rotulo: 'Usuários' },
   { valor: 'setores', rotulo: 'Setores' }, { valor: 'acessos', rotulo: 'Acessos' }, { valor: 'grupos', rotulo: 'Grupos' },
   { valor: 'config', rotulo: 'Configurações' }, { valor: 'auth', rotulo: 'Login' },
 ];
 const NOME_AREA = Object.fromEntries(AREAS.map((a) => [a.valor, a.rotulo]));
 const ACOES: Record<string, { txt: string; cls: string }> = {
   criar: { txt: 'Criou', cls: 'ok' }, editar: { txt: 'Alterou', cls: 'info' }, excluir: { txt: 'Excluiu', cls: 'late' },
-  restaurar: { txt: 'Restaurou', cls: 'ok' }, devolver: { txt: 'Devolveu', cls: 'ok' }, resolver: { txt: 'Resolveu pendência', cls: 'ok' },
+  restaurar: { txt: 'Restaurou', cls: 'ok' }, cancelar: { txt: 'Cancelou', cls: 'late' }, aprovar: { txt: 'Aprovou', cls: 'ok' }, recusar: { txt: 'Recusou', cls: 'late' }, devolver: { txt: 'Devolveu', cls: 'ok' }, resolver: { txt: 'Resolveu pendência', cls: 'ok' },
   senha: { txt: 'Redefiniu a senha', cls: 'warn' }, forcar_logout: { txt: 'Forçou logout', cls: 'warn' }, login: { txt: 'Entrou', cls: 'info' },
   ativo: { txt: 'Voltou a ativo', cls: 'ok' }, manutencao: { txt: 'Mandou para manutenção', cls: 'warn' }, danificado: { txt: 'Marcou danificado', cls: 'late' },
   extraviado: { txt: 'Marcou extraviado', cls: 'late' }, baixado: { txt: 'Deu baixa', cls: 'late' },
@@ -35,7 +35,8 @@ const ROTULOS: Record<string, string> = {
   login: 'Login', ativo: 'Ativo', limites: 'Limites de empréstimo', previsaoEm: 'Previsão', retiradaEm: 'Retirada', devolvidoEm: 'Devolvido em',
   finalidade: 'Finalidade', acessorios: 'Acessórios', acessoriosFaltando: 'Acessórios faltando', chamadoGlpi: 'Chamado GLPI', obs: 'Observações',
   papel: 'Perfil', permissoes: 'Permissões', suspenso: 'Suspenso', grupoId: 'Grupo', ip: 'IP', mac: 'MAC', termoStatus: 'Termo',
-  equipamentosSoltos: 'Equipamentos soltos', liberouLimite: 'Liberou exceção de limite', confirmouAtraso: 'Entregou com atraso',
+  equipamentosSoltos: 'Equipamentos soltos', inicioEm: 'Início', fimEm: 'Fim', status: 'Situação do registro', motivoRecusa: 'Motivo da recusa',
+  justificativa: 'Justificativa', devolucaoEm: 'Devolução', mensagemTi: 'Mensagem da TI', liberouLimite: 'Liberou exceção de limite', confirmouAtraso: 'Entregou com atraso',
 };
 const IGNORAR = new Set(['id', 'criadoEm', 'atualizadoEm', 'excluidoEm', 'vinculadoEm', 'assinaturaUrl', 'fotoUrl', 'assinaturaRetiradaUrl', 'assinaturaDevolucaoUrl']);
 const ISO = /^\d{4}-\d{2}-\d{2}T/;
