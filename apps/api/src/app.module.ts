@@ -8,13 +8,14 @@ import { AcessosModule } from './acessos/acessos.module';
 import { EmprestimosModule } from './emprestimos/emprestimos.module';
 import { AuditoriaModule } from './auditoria/auditoria.module';
 import { ConfigModule } from './config/config.module';
+import { ReservasModule } from './reservas/reservas.module';
 import { BuscaModule } from './busca/busca.module';
 import { TempoRealModule } from './tempo-real/tempo-real.module';
 
 @Module({
   imports: [
     ComumModule, AuthModule, SetoresModule, PessoasModule, EquipamentosModule,
-    AcessosModule, EmprestimosModule, AuditoriaModule, ConfigModule, BuscaModule, TempoRealModule,
+    AcessosModule, EmprestimosModule, AuditoriaModule, ConfigModule, BuscaModule, ReservasModule, TempoRealModule,
   ],
 })
 export class AppModule {}

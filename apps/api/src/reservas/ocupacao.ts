@@ -51,11 +51,17 @@ export async function ocupacaoDosEmprestaveis(db: Db, cfg: ConfigNucleo, a: Date
   })));
 }
 
-// Quantos equipamentos do tipo a pessoa tem ao mesmo tempo em [a, b): empréstimos abertos + reservas ativas sobrepostas.
+// Quantos equipamentos do tipo a pessoa tem ao mesmo tempo em [a, b): empréstimos abertos que só voltam depois de `a`
+// + reservas ativas sobrepostas (como o posseTI do app atual).
 // A reserva do próprio equipamento que está sendo emprestado não conta (é a mesma coisa).
 export async function contarPosse(db: Db, pessoaId: string, tipo: string, a: Date, b: Date, ignorar: { reserva?: string; equipamento?: string; emprestimo?: string } = {}) {
   const [emps, ress] = await Promise.all([
-    db.emprestimo.count({ where: { pessoaId, devolvidoEm: null, excluidoEm: null, equipamento: { tipo }, ...(ignorar.emprestimo && { id: { not: ignorar.emprestimo } }) } }),
+    db.emprestimo.count({
+      where: {
+        pessoaId, devolvidoEm: null, excluidoEm: null, equipamento: { tipo }, OR: [{ previsaoEm: null }, { previsaoEm: { gt: a } }],
+        ...(ignorar.emprestimo && { id: { not: ignorar.emprestimo } }),
+      },
+    }),
     db.reserva.count({
       where: {
         pessoaId, status: 'ativa', excluidoEm: null, equipamento: { tipo }, inicioEm: { lt: b }, fimEm: { gt: a },

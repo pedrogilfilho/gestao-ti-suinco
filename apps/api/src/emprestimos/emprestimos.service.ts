@@ -104,6 +104,12 @@ export class EmprestimosService {
     const pessoa = await this.db.pessoa.findFirst({ where: { id: d.pessoaId, excluidoEm: null } });
     if (!pessoa) throw new ErroNegocio(400, 'Escolha o colaborador.', 'pessoaId');
     if (!pessoa.ativo) throw new ErroNegocio(409, `${pessoa.nome} está desativado.`, 'pessoaId');
+    // módulo 2: "Registrar retirada" de uma reserva
+    const reserva = d.reservaId ? await this.db.reserva.findFirst({ where: { id: d.reservaId, excluidoEm: null } }) : null;
+    if (d.reservaId) {
+      if (!reserva || reserva.status !== 'ativa') throw new ErroNegocio(409, 'Essa reserva não está mais ativa.');
+      if (reserva.equipamentoId !== d.equipamentoId || reserva.pessoaId !== d.pessoaId) throw new ErroNegocio(400, 'O empréstimo precisa ser do equipamento e da pessoa da reserva.');
+    }
     const eq = await this.conferirEquipamento(this.db, d.equipamentoId, cfg);
     if (cfg.assinaturas && !d.assinatura) throw new ErroNegocio(400, 'O colaborador precisa assinar a retirada.', 'assinatura');
     if (d.finalidade !== 'Outra' && !cfg.finalidades.some((f) => f.nome === d.finalidade)) throw new ErroNegocio(400, 'Escolha a finalidade.', 'finalidade');
@@ -138,8 +144,16 @@ export class EmprestimosService {
           data: {
             equipamentoId: eq.id, pessoaId: pessoa.id, tecnicoId, finalidade: d.finalidade, finalidadeOutra: d.finalidade === 'Outra' ? d.finalidadeOutra : '',
             chamadoGlpi: d.chamadoGlpi, retiradaEm: d.retiradaEm, previsaoEm: d.previsaoEm, acessorios: d.acessorios, assinaturaRetiradaUrl, obs: d.obs,
+            reservaId: reserva?.id ?? null,
           },
         });
+        if (reserva) {
+          // updateMany com status: se outra pessoa retirou ou cancelou no meio-tempo, nada muda e o empréstimo é desfeito
+          const n = await tx.reserva.updateMany({ where: { id: reserva.id, status: 'ativa' }, data: { status: 'retirada' } });
+          if (!n.count) throw new ErroNegocio(409, 'Essa reserva não está mais ativa.');
+          await auditar(tx, { atorId: u.acessoId, acao: 'editar', area: 'reservas', itemId: reserva.id, antes: reserva, depois: { status: 'retirada', emprestimoId: e.id } });
+          if (reserva.pedidoId) await tx.pedido.update({ where: { id: reserva.pedidoId }, data: { status: 'entregue' } });
+        }
         await auditar(tx, {
           atorId: u.acessoId, acao: 'criar', area: 'emprestimos', itemId: e.id,
           depois: { ...e, equipamento: eq.codigo, pessoa: pessoa.nome, liberouLimite: passouLimite, confirmouAtraso: !!d.confirmarAtraso },
@@ -147,6 +161,8 @@ export class EmprestimosService {
         return e;
       });
       this.eventos.emitir('mudou', { area: 'emprestimos', pessoaIds: [pessoa.id] });
+      if (reserva) this.eventos.emitir('mudou', { area: 'reservas' });
+      if (reserva?.pedidoId) this.eventos.emitir('mudou', { area: 'pedidos', pessoaIds: [pessoa.id] });
       return e;
     } catch (err) {
       // dois registros ao mesmo tempo: o índice único deixa passar só um

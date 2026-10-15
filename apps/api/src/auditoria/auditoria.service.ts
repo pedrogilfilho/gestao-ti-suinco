@@ -8,7 +8,7 @@ import { paginar } from '../comum/lista';
 import type { Usuario } from '../auth/decorators';
 
 // áreas que podem ser restauradas e o modelo do Prisma de cada uma
-const MODELOS = { setores: 'setor', pessoas: 'pessoa', equipamentos: 'equipamento', emprestimos: 'emprestimo' } as const;
+const MODELOS = { setores: 'setor', pessoas: 'pessoa', equipamentos: 'equipamento', emprestimos: 'emprestimo', reservas: 'reserva' } as const;
 type Modelo = (typeof MODELOS)[keyof typeof MODELOS];
 const RESTAURAVEIS = new Set(['excluir', 'editar']);
 // campos que não se regravam (identidade, datas automáticas e relações que vieram junto no "antes")
@@ -85,5 +85,7 @@ export class AuditoriaService {
     if (modelo === 'setor') await checa({ nome: { equals: reg.nome, mode: 'insensitive' } }, 'nome', reg.nome);
     if (modelo === 'emprestimo' && !reg.devolvidoEm)
       await checa({ equipamentoId: reg.equipamentoId, devolvidoEm: null }, 'equipamento emprestado', 'há outro empréstimo aberto');
+    if (modelo === 'reserva' && reg.status === 'ativa')
+      await checa({ equipamentoId: reg.equipamentoId, status: 'ativa', inicioEm: { lt: reg.fimEm }, fimEm: { gt: reg.inicioEm } }, 'equipamento reservado no horário', 'há outra reserva');
   }
 }
