@@ -213,6 +213,79 @@ export function mapearEmprestimos(emps: Doc[], equipPorCodigo: Map<string, strin
   return { dados, ignorados, avisos };
 }
 
+// ---------- módulo 2: pedidos e reservas ----------
+const STATUS_PEDIDO = new Set(['pendente', 'aprovado', 'recusado', 'cancelado', 'entregue']);
+const deMs = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? new Date(v) : null);
+// pedidos antigos feitos como "Notebook" valem como "Notebook Empréstimo"
+const tipoPedido = (t: unknown) => (txt(t).toLowerCase() === 'notebook' ? 'Notebook Empréstimo' : tipoNovo(txt(t)));
+type De = 'colab' | 'ti' | 'sistema';
+const deNovo = (v: unknown): De => (v === 'colab' ? 'colab' : v === 'ti' ? 'ti' : 'sistema');
+
+export type MensagemNova = { de: De; autorId: string | null; texto: string; em: Date };
+export type PedidoNovo = {
+  origem: string; pessoaId: string; tipo: string; urgente: boolean; justificativa: string; finalidade: string; finalidadeOutra: string;
+  chamadoGlpi: string; retiradaEm: Date; devolucaoEm: Date | null; acessorios: string[]; obs: string; assinatura: string | null;
+  telefoneCorp: string | null; telefonePart: string | null; status: 'pendente' | 'aprovado' | 'recusado' | 'cancelado' | 'entregue';
+  motivoRecusa: string; mensagemTi: string; equipamentoId: string | null; respondidoEm: Date | null; editadoEm: Date | null;
+  semEquipAvisadoEm: Date | null; ultimaDe: De | null; ultimaEm: Date | null; criadoEm: Date;
+  mensagens: MensagemNova[]; empOrigem: string | null;
+};
+
+export function mapearPedidos(peds: Doc[], pessoaPorEmail: Map<string, string>, equipPorCodigo: Map<string, string>) {
+  const dados: PedidoNovo[] = [], ignorados: Ignorado[] = [];
+  for (const p of peds) {
+    const id = txt(p.id) || '(sem id)';
+    const pessoaId = pessoaPorEmail.get(email(p.email));
+    if (!pessoaId) { ignorados.push({ area: 'pedidos', id, motivo: `pessoa ${email(p.email) || '(sem e-mail)'} não cadastrada` }); continue; }
+    const criadoEm = deMs(p.criadoEm) ?? new Date();
+    dados.push({
+      origem: id, pessoaId, tipo: tipoPedido(p.tipo), urgente: p.urgente === true, justificativa: txt(p.justificativa),
+      finalidade: txt(p.finalidade), finalidadeOutra: txt(p.finalidadeOutra), chamadoGlpi: txt(p.chamado).replace(/\D/g, ''),
+      retiradaEm: dataHoraSP(p.dataRet, p.horaRet) ?? criadoEm, devolucaoEm: dataHoraSP(p.dataDev, p.horaDev, '23:59'),
+      acessorios: lista(p.acessorios), obs: txt(p.obs), assinatura: imagemPng(p.assinatura),
+      telefoneCorp: tel(p.telefone), telefonePart: tel(p.telefonePart),
+      status: STATUS_PEDIDO.has(txt(p.status)) ? p.status : 'pendente', motivoRecusa: txt(p.motivo), mensagemTi: txt(p.mensagem),
+      equipamentoId: equipPorCodigo.get(txt(p.equipamento).toLowerCase()) ?? null,
+      respondidoEm: deMs(p.respondidoEm), editadoEm: deMs(p.editadoEm), semEquipAvisadoEm: deMs(p.semEqAvisadoEm),
+      ultimaDe: p.ultimaDe ? deNovo(p.ultimaDe) : null, ultimaEm: deMs(p.ultimaEm), criadoEm,
+      // a TI escrevia com a conta do Firebase (uid), que não tem correspondente aqui: o autor fica vazio
+      mensagens: (Array.isArray(p.mensagens) ? p.mensagens : []).filter((m: Doc) => txt(m?.txt)).map((m: Doc) => ({
+        de: deNovo(m.de), autorId: m.de === 'colab' ? pessoaId : null, texto: txt(m.txt).slice(0, 2000), em: deMs(m.em) ?? criadoEm,
+      })),
+      empOrigem: txt(p.empId) || null,
+    });
+  }
+  return { dados, ignorados };
+}
+
+export type ReservaNova = {
+  origem: string; equipamentoId: string; pessoaId: string; inicioEm: Date; fimEm: Date; finalidade: string; finalidadeOutra: string;
+  chamadoGlpi: string; obs: string; status: 'ativa' | 'cancelada' | 'retirada'; pedidoOrigem: string | null; empOrigem: string | null; criadoEm: Date;
+};
+
+export function mapearReservas(ress: Doc[], pessoaPorEmail: Map<string, string>, equipPorCodigo: Map<string, string>) {
+  const dados: ReservaNova[] = [], ignorados: Ignorado[] = [];
+  for (const r of ress) {
+    const id = txt(r.id) || '(sem id)';
+    const equipamentoId = equipPorCodigo.get(txt(r.equipamento).toLowerCase());
+    if (!equipamentoId) { ignorados.push({ area: 'reservas', id, motivo: `equipamento ${txt(r.equipamento) || '(vazio)'} não está no backup` }); continue; }
+    const pessoaId = pessoaPorEmail.get(email(r.email));
+    if (!pessoaId) { ignorados.push({ area: 'reservas', id, motivo: `pessoa ${email(r.email) || '(sem e-mail)'} não cadastrada` }); continue; }
+    const inicioEm = dataHoraSP(r.data, r.horaIni);
+    // reserva de vários dias vale até a devolução prevista (prevData/prevHora), como no app atual
+    const fimEm = txt(r.prevData) ? dataHoraSP(r.prevData, r.prevHora, '23:59') : dataHoraSP(r.data, r.horaFim, '23:59');
+    if (!inicioEm || !fimEm || fimEm <= inicioEm) { ignorados.push({ area: 'reservas', id, motivo: 'data ou horário inválido' }); continue; }
+    const st = txt(r.status);
+    dados.push({
+      origem: id, equipamentoId, pessoaId, inicioEm, fimEm, finalidade: txt(r.finalidade), finalidadeOutra: txt(r.finalidadeOutra),
+      chamadoGlpi: txt(r.chamado).replace(/\D/g, ''), obs: txt(r.obs),
+      status: st === 'convertida' ? 'retirada' : st === 'cancelada' ? 'cancelada' : 'ativa',
+      pedidoOrigem: txt(r.pedidoId) || null, empOrigem: txt(r.empId) || null, criadoEm: deMs(r.criadoEm) ?? new Date(),
+    });
+  }
+  return { dados, ignorados };
+}
+
 // ---------- configuração ----------
 export function mapearConfig(cfg: Doc | null | undefined): Partial<ConfigNucleo> {
   if (!cfg) return {};
@@ -220,6 +293,12 @@ export function mapearConfig(cfg: Doc | null | undefined): Partial<ConfigNucleo>
     tiposEmprestaveis: Array.isArray(cfg.tiposEmprestaveis) ? cfg.tiposEmprestaveis.map((x: unknown) => tipoNovo(txt(x))).filter((x: string) => (TIPOS_EQUIP as readonly string[]).includes(x)) : undefined,
     acessorios: cfg.acessorios, finalidades: cfg.finalidades, bloqueioAtraso: cfg.bloqueioAtraso,
     assinaturas: cfg.assinaturas, glpiUrl: cfg.glpiUrl, avisoMin: cfg.avisoMin,
+    // módulo 2
+    expediente: cfg.expOn === undefined ? undefined : {
+      ligado: cfg.expOn === true, dias: Array.isArray(cfg.expDias) && cfg.expDias.length ? cfg.expDias.map(Number) : [1, 2, 3, 4, 5],
+      inicio: txt(cfg.expIni) || '07:30', fim: txt(cfg.expFim) || '17:30',
+    },
+    antecedenciaMin: cfg.antecedenciaMin === undefined || cfg.antecedenciaMin === '' ? undefined : Number(cfg.antecedenciaMin),
   };
   const forma = configNucleoSchema.shape;
   return Object.fromEntries(

@@ -13,8 +13,12 @@ afterAll(async () => { await db.$disconnect(); });
 describe('importar', () => {
   it('ensaio não grava nada e devolve o relatório', async () => {
     const rel = await importar(db, backup(), { ensaio: true });
-    expect(rel.criados).toMatchObject({ pessoas: 4, acessos: 3, equipamentos: 4, emprestimos: 2, grupos: 1 });
-    expect(rel.ignorados).toEqual([{ area: 'emprestimos', id: 'EMP-0099', motivo: 'pessoa ninguem@suinco.com.br não está no backup' }]);
+    expect(rel.criados).toMatchObject({ pessoas: 4, acessos: 3, equipamentos: 4, emprestimos: 2, grupos: 1, reservas: 2, pedidos: 2, mensagens: 2 });
+    expect(rel.ignorados).toEqual([
+      { area: 'emprestimos', id: 'EMP-0099', motivo: 'pessoa ninguem@suinco.com.br não está no backup' },
+      { area: 'pedidos', id: 'PED-3', motivo: 'pessoa ninguem@suinco.com.br não cadastrada' },
+      { area: 'reservas', id: 'RES-3', motivo: 'equipamento XX-99 não está no backup' },
+    ]);
     expect(await db.pessoa.count()).toBe(0);
     expect(await db.auditoria.count()).toBe(0);
   });
@@ -81,5 +85,25 @@ describe('importar', () => {
 
   it('arquivo que não é backup do sistema', async () => {
     await expect(importar(db, { qualquer: 1 }, { ensaio: true })).rejects.toThrow('Esse arquivo não parece um backup do sistema (faltam usuarios e equipamentos).');
+  });
+
+  it('módulo 2: pedidos com a conversa, reservas e a ligação com o empréstimo', async () => {
+    await importar(db, backup(), { ensaio: false });
+    const p1 = await db.pedido.findFirstOrThrow({ where: { chamadoGlpi: '43150' }, include: { mensagens: { orderBy: { em: 'asc' } }, pessoa: true, equipamento: true } });
+    expect(p1).toMatchObject({ tipo: 'Notebook Empréstimo', status: 'entregue', pessoa: { email: 'ana.souza@suinco.com.br' }, equipamento: { codigo: 'NB-01' } });
+    expect(p1.assinaturaUrl).toMatch(/^assinaturas\//);
+    expect(p1.mensagens.map((m) => [m.de, m.texto])).toEqual([['colab', 'Preciso para a viagem de terça'], ['sistema', 'Pedido aprovado. NB-01 reservado.']]);
+    expect(p1.mensagens[0]!.autorId).toBe(p1.pessoaId);
+    const urg = await db.pedido.findFirstOrThrow({ where: { urgente: true } });
+    expect(urg).toMatchObject({ status: 'pendente', justificativa: 'Projetor da sala quebrou', devolucaoEm: null });
+    const r1 = await db.reserva.findFirstOrThrow({ where: { pedidoId: p1.id }, include: { emprestimo: true } });
+    expect(r1.status).toBe('retirada');
+    expect(r1.fimEm.toISOString()).toBe('2026-10-17T20:00:00.000Z');
+    const emp = await db.emprestimo.findFirstOrThrow({ where: { devolvidoEm: null } });
+    expect(r1.emprestimo!.id).toBe(emp.id);
+    expect(emp.pedidoId).toBe(p1.id);
+    const r2 = await db.reserva.findFirstOrThrow({ where: { status: 'ativa' } });
+    expect(r2).toMatchObject({ obs: 'Levar carregador', finalidade: 'Treinamento' });
+    expect(r2.inicioEm.toISOString()).toBe('2026-10-20T11:00:00.000Z');
   });
 });

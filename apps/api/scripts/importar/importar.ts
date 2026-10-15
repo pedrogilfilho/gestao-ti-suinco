@@ -4,10 +4,10 @@ import type { PrismaClient } from '@prisma/client';
 import { chaveNome, configNucleoSchema, PERMISSOES } from '@gestao/shared';
 import { ArquivosService } from '../../src/comum/arquivos.service';
 import { gerarHash, senhaTemporaria, ehDono } from '../../src/auth/senha';
-import { mapearPessoas, mapearAcessos, mapearEquipamentos, mapearEmprestimos, mapearConfig, SEM_SETOR, type Doc, type Ignorado } from './mapear';
+import { mapearPessoas, mapearAcessos, mapearEquipamentos, mapearEmprestimos, mapearPedidos, mapearReservas, mapearConfig, SEM_SETOR, type Doc, type Ignorado } from './mapear';
 
 export type Relatorio = {
-  criados: Record<'setores' | 'pessoas' | 'fotos' | 'assinaturas' | 'grupos' | 'acessos' | 'equipamentos' | 'emprestimos', number>;
+  criados: Record<'setores' | 'pessoas' | 'fotos' | 'assinaturas' | 'grupos' | 'acessos' | 'equipamentos' | 'emprestimos' | 'pedidos' | 'reservas' | 'mensagens', number>;
   ignorados: Ignorado[];
   avisos: string[];
   senhasDonos: { email: string; senha: string }[];
@@ -31,7 +31,7 @@ export async function importar(db: PrismaClient, backup: Doc, opcoes: { ensaio: 
   const salvarFoto = async (b64: string) => (opcoes.ensaio ? 'ensaio.jpg' : arquivos.salvarFoto(b64));
 
   const rel: Relatorio = {
-    criados: { setores: 0, pessoas: 0, fotos: 0, assinaturas: 0, grupos: 0, acessos: 0, equipamentos: 0, emprestimos: 0 },
+    criados: { setores: 0, pessoas: 0, fotos: 0, assinaturas: 0, grupos: 0, acessos: 0, equipamentos: 0, emprestimos: 0, pedidos: 0, reservas: 0, mensagens: 0 },
     ignorados: [], avisos: [], senhasDonos: [],
   };
 
@@ -127,12 +127,51 @@ export async function importar(db: PrismaClient, backup: Doc, opcoes: { ensaio: 
       const emps = mapearEmprestimos(arr(backup.emprestimos), equipPorCodigo, pessoaPorEmail);
       rel.avisos.push(...emps.avisos);
       rel.ignorados.push(...emps.ignorados);
+      const empPorOrigem = new Map<string, string>();
       for (const { origem, assinaturaRetirada, assinaturaDevolucao, ...e } of emps.dados) {
         const assinaturaRetiradaUrl = assinaturaRetirada ? await salvarPng(assinaturaRetirada) : null;
         const assinaturaDevolucaoUrl = assinaturaDevolucao ? await salvarPng(assinaturaDevolucao) : null;
         rel.criados.assinaturas += Number(!!assinaturaRetiradaUrl) + Number(!!assinaturaDevolucaoUrl);
-        await tx.emprestimo.create({ data: { ...e, assinaturaRetiradaUrl, assinaturaDevolucaoUrl } });
+        const criado = await tx.emprestimo.create({ data: { ...e, assinaturaRetiradaUrl, assinaturaDevolucaoUrl } });
+        empPorOrigem.set(origem, criado.id);
         rel.criados.emprestimos++;
+      }
+      // liga o empréstimo à reserva e ao pedido de onde veio (no máximo um de cada)
+      const ligados = new Set<string>();
+      const ligar = async (empOrigem: string | null, campo: 'reservaId' | 'pedidoId', id: string, quem: string) => {
+        const empId = empOrigem ? empPorOrigem.get(empOrigem) : undefined;
+        if (!empId) return;
+        if (ligados.has(`${campo}:${empId}`)) { rel.avisos.push(`${quem}: o empréstimo ${empOrigem} já estava ligado a outro registro; ficou sem a ligação.`); return; }
+        ligados.add(`${campo}:${empId}`);
+        await tx.emprestimo.update({ where: { id: empId }, data: { [campo]: id } });
+      };
+
+      // 7b. pedidos (módulo 2), com a conversa
+      const peds = mapearPedidos(arr(backup.pedidos), pessoaPorEmail, equipPorCodigo);
+      rel.ignorados.push(...peds.ignorados);
+      const pedidoPorOrigem = new Map<string, string>();
+      for (const { origem, mensagens, assinatura, empOrigem, ...p } of peds.dados) {
+        const assinaturaUrl = assinatura ? await salvarPng(assinatura) : null;
+        rel.criados.assinaturas += Number(!!assinaturaUrl);
+        const criado = await tx.pedido.create({ data: { ...p, assinaturaUrl } });
+        if (mensagens.length) await tx.pedidoMensagem.createMany({ data: mensagens.map((m) => ({ ...m, pedidoId: criado.id })) });
+        rel.criados.mensagens += mensagens.length;
+        pedidoPorOrigem.set(origem, criado.id);
+        await ligar(empOrigem, 'pedidoId', criado.id, `Pedido ${origem}`);
+        rel.criados.pedidos++;
+      }
+
+      // 7c. reservas (módulo 2)
+      const ress = mapearReservas(arr(backup.reservas), pessoaPorEmail, equipPorCodigo);
+      rel.ignorados.push(...ress.ignorados);
+      const pedidoUsado = new Set<string>();
+      for (const { origem, pedidoOrigem, empOrigem, ...r } of ress.dados) {
+        let pedidoId = pedidoOrigem ? pedidoPorOrigem.get(pedidoOrigem) ?? null : null;
+        if (pedidoId && pedidoUsado.has(pedidoId)) { rel.avisos.push(`Reserva ${origem}: o pedido ${pedidoOrigem} já tinha outra reserva; ficou sem a ligação.`); pedidoId = null; }
+        if (pedidoId) pedidoUsado.add(pedidoId);
+        const criado = await tx.reserva.create({ data: { ...r, pedidoId } });
+        await ligar(empOrigem, 'reservaId', criado.id, `Reserva ${origem}`);
+        rel.criados.reservas++;
       }
 
       // 8. configuração do núcleo
