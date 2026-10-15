@@ -148,7 +148,11 @@ export class PedidosService {
   }
 
   async meus(u: Usuario) {
-    const ps = await this.db.pedido.findMany({ where: { pessoaId: u.pessoaId, excluidoEm: null }, include: INCLUIR_PEDIDO, orderBy: { criadoEm: 'desc' }, take: 100 });
-    return { itens: ps.map(pedidoParaTela) };
+    const [ps, pessoa] = await Promise.all([
+      this.db.pedido.findMany({ where: { pessoaId: u.pessoaId, excluidoEm: null }, include: INCLUIR_PEDIDO, orderBy: { criadoEm: 'desc' }, take: 100 }),
+      this.db.pessoa.findUnique({ where: { id: u.pessoaId }, select: { telefoneCorp: true, telefonePart: true } }),
+    ]);
+    // os telefones do cadastro vão junto: o formulário pede para o colaborador confirmar
+    return { itens: ps.map(pedidoParaTela), telefones: { corp: pessoa?.telefoneCorp ?? null, part: pessoa?.telefonePart ?? null } };
   }
 }

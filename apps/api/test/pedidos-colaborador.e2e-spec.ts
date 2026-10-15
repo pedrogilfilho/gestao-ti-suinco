@@ -41,8 +41,9 @@ describe('pedido do colaborador', () => {
     expect(p).toMatchObject({ pessoaId: s.pessoaId, status: 'pendente', telefoneCorp: '(34) 99999-0000', chamadoGlpi: '4512' });
     expect(p!.assinaturaUrl).toMatch(/^assinaturas\//);
     expect(await db.auditoria.count({ where: { area: 'pedidos', acao: 'criar' } })).toBe(1);
-    const meus = (await ag.get('/api/pedidos/meus').expect(200)).body.itens;
-    expect(meus).toHaveLength(1);
+    const meus = (await ag.get('/api/pedidos/meus').expect(200)).body;
+    expect(meus.itens).toHaveLength(1);
+    expect(meus.telefones).toEqual({ corp: '(34) 99999-0000', part: null });
   });
   it('a TI não faz pedido', async () => {
     const t = await criarPessoaComAcesso(db, 'tic', { permissoes: ['reservar', 'emprestar'] });
