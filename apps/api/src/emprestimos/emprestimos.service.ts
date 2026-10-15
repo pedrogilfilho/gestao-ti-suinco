@@ -14,6 +14,7 @@ import { lerConfig } from '../comum/config-ler';
 import { ehDono } from '../auth/senha';
 import type { Usuario } from '../auth/decorators';
 import { contarPosse, horarioReserva, reservaNoPeriodo } from '../reservas/ocupacao';
+import { AnaliseService } from '../pedidos/analise.service';
 
 const ABERTO = { devolvidoEm: null, excluidoEm: null } satisfies Prisma.EmprestimoWhereInput;
 const INCLUIR = {
@@ -110,6 +111,14 @@ export class EmprestimosService {
       if (!reserva || reserva.status !== 'ativa') throw new ErroNegocio(409, 'Essa reserva não está mais ativa.');
       if (reserva.equipamentoId !== d.equipamentoId || reserva.pessoaId !== d.pessoaId) throw new ErroNegocio(400, 'O empréstimo precisa ser do equipamento e da pessoa da reserva.');
     }
+    // módulo 2: "Entregar agora" de um pedido
+    const pedido = d.pedidoId ? await this.db.pedido.findFirst({ where: { id: d.pedidoId, excluidoEm: null } }) : null;
+    if (d.pedidoId) {
+      if (!u.permissoes.has('reservar')) throw new ErroNegocio(403, 'Você não tem permissão para isso.');
+      if (!pedido) throw new ErroNegocio(404, 'Este pedido não existe mais.');
+      if (pedido.status !== 'pendente') throw new ErroNegocio(409, pedido.status === 'cancelado' ? 'O colaborador cancelou este pedido.' : `Este pedido já foi tratado (${pedido.status}).`);
+      if (pedido.pessoaId !== d.pessoaId) throw new ErroNegocio(400, 'O empréstimo precisa ser para quem fez o pedido.');
+    }
     const eq = await this.conferirEquipamento(this.db, d.equipamentoId, cfg);
     if (cfg.assinaturas && !d.assinatura) throw new ErroNegocio(400, 'O colaborador precisa assinar a retirada.', 'assinatura');
     if (d.finalidade !== 'Outra' && !cfg.finalidades.some((f) => f.nome === d.finalidade)) throw new ErroNegocio(400, 'Escolha a finalidade.', 'finalidade');
@@ -144,9 +153,17 @@ export class EmprestimosService {
           data: {
             equipamentoId: eq.id, pessoaId: pessoa.id, tecnicoId, finalidade: d.finalidade, finalidadeOutra: d.finalidade === 'Outra' ? d.finalidadeOutra : '',
             chamadoGlpi: d.chamadoGlpi, retiradaEm: d.retiradaEm, previsaoEm: d.previsaoEm, acessorios: d.acessorios, assinaturaRetiradaUrl, obs: d.obs,
-            reservaId: reserva?.id ?? null,
+            reservaId: reserva?.id ?? null, pedidoId: pedido?.id ?? null,
           },
         });
+        if (pedido) {
+          const agora = new Date();
+          await AnaliseService.marcar(tx, pedido.id, {
+            status: 'entregue', equipamentoId: eq.id, respondidoPorId: u.pessoaId, respondidoEm: agora, ultimaDe: 'ti', ultimaEm: agora,
+          });
+          await tx.pedidoMensagem.create({ data: { pedidoId: pedido.id, de: 'sistema', texto: `Pedido aprovado e entregue: ${eq.codigo}.`, em: agora } });
+          await auditar(tx, { atorId: u.acessoId, acao: 'aprovar', area: 'pedidos', itemId: pedido.id, antes: pedido, depois: { status: 'entregue', emprestimoId: e.id } });
+        }
         if (reserva) {
           // updateMany com status: se outra pessoa retirou ou cancelou no meio-tempo, nada muda e o empréstimo é desfeito
           const n = await tx.reserva.updateMany({ where: { id: reserva.id, status: 'ativa' }, data: { status: 'retirada' } });
@@ -162,7 +179,7 @@ export class EmprestimosService {
       });
       this.eventos.emitir('mudou', { area: 'emprestimos', pessoaIds: [pessoa.id] });
       if (reserva) this.eventos.emitir('mudou', { area: 'reservas' });
-      if (reserva?.pedidoId) this.eventos.emitir('mudou', { area: 'pedidos', pessoaIds: [pessoa.id] });
+      if (reserva?.pedidoId || pedido) this.eventos.emitir('mudou', { area: 'pedidos', pessoaIds: [pessoa.id] });
       return e;
     } catch (err) {
       // dois registros ao mesmo tempo: o índice único deixa passar só um

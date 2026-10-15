@@ -8,7 +8,7 @@ import { paginar } from '../comum/lista';
 import type { Usuario } from '../auth/decorators';
 
 // áreas que podem ser restauradas e o modelo do Prisma de cada uma
-const MODELOS = { setores: 'setor', pessoas: 'pessoa', equipamentos: 'equipamento', emprestimos: 'emprestimo', reservas: 'reserva' } as const;
+const MODELOS = { setores: 'setor', pessoas: 'pessoa', equipamentos: 'equipamento', emprestimos: 'emprestimo', reservas: 'reserva', pedidos: 'pedido' } as const;
 type Modelo = (typeof MODELOS)[keyof typeof MODELOS];
 const RESTAURAVEIS = new Set(['excluir', 'editar']);
 // campos que não se regravam (identidade, datas automáticas e relações que vieram junto no "antes")
