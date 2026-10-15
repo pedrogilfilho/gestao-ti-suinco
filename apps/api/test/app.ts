@@ -18,7 +18,7 @@ export async function montarApp(): Promise<{ app: INestApplication; db: PrismaCl
 }
 
 export async function limparBanco(db: PrismaClient) {
-  await db.$executeRawUnsafe('TRUNCATE auditoria, termo_link, pedido_mensagem, emprestimo, reserva, pedido, equipamento, credencial_local, acesso, grupo_acesso, pessoa, setor, config, tentativa_login CASCADE');
+  await db.$executeRawUnsafe('TRUNCATE auditoria, pedido_mensagem, emprestimo, reserva, pedido, equipamento, credencial_local, acesso, grupo_acesso, pessoa, setor, config, tentativa_login CASCADE');
 }
 
 export async function criarPessoaComAcesso(

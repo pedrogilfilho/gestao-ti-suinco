@@ -1,7 +1,7 @@
 import type { Tx } from './prisma.service';
 
-export type Area = 'setores' | 'pessoas' | 'equipamentos' | 'emprestimos' | 'acessos' | 'grupos' | 'config' | 'auth' | 'reservas' | 'pedidos' | 'termos';
-export type Acao = 'criar' | 'editar' | 'excluir' | 'restaurar' | 'login' | 'suspender' | 'reativar' | 'forcar_logout' | 'senha' | 'devolver' | 'resolver' | 'cancelar' | 'aprovar' | 'recusar' | 'assinar' | 'aplicar';
+export type Area = 'setores' | 'pessoas' | 'equipamentos' | 'emprestimos' | 'acessos' | 'grupos' | 'config' | 'auth' | 'reservas' | 'pedidos';
+export type Acao = 'criar' | 'editar' | 'excluir' | 'restaurar' | 'login' | 'suspender' | 'reativar' | 'forcar_logout' | 'senha' | 'devolver' | 'resolver' | 'cancelar' | 'aprovar' | 'recusar';
 
 const SENSIVEIS = new Set(['senhaHash', 'senha', 'nova', 'atual']);
 const limpar = (v: unknown): unknown =>

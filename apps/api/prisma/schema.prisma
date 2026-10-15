@@ -68,7 +68,6 @@ model Pessoa {
   reservas      Reserva[]
   pedidos       Pedido[]
   mensagens     PedidoMensagem[]
-  termoLinks    TermoLink[]      @relation("termoPessoa")
 
   @@map("pessoa")
 }
@@ -139,7 +138,6 @@ model Equipamento {
   tipoChip        String        @default("") @map("tipo_chip")
   termoStatus     TermoStatus   @default(nao_informado) @map("termo_status")
   termoObs        String        @default("") @map("termo_obs")
-  termoEm         DateTime?     @map("termo_em") @db.Timestamptz
   garantiaAte     DateTime?     @map("garantia_ate") @db.Date
   predio          String        @default("")
   pontoRede       String        @default("") @map("ponto_rede")
@@ -314,24 +312,4 @@ model Config {
   valor Json
 
   @@map("config")
-}
-
-// módulo 3: link público para a pessoa assinar o termo de responsabilidade
-model TermoLink {
-  id             String    @id @default(uuid()) @db.Uuid
-  token          String    @unique
-  pessoaId       String    @map("pessoa_id") @db.Uuid
-  pessoa         Pessoa    @relation("termoPessoa", fields: [pessoaId], references: [id])
-  equipamentoIds String[]  @map("equipamento_ids") @db.Uuid
-  itens          Json      @default("[]")
-  texto          String
-  criadoPorId    String?   @map("criado_por_id") @db.Uuid
-  criadoEm       DateTime  @default(now()) @map("criado_em") @db.Timestamptz
-  assinadoEm     DateTime? @map("assinado_em") @db.Timestamptz
-  assinaturaUrl  String?   @map("assinatura_url")
-  aplicadoEm     DateTime? @map("aplicado_em") @db.Timestamptz
-  aplicadoPorId  String?   @map("aplicado_por_id") @db.Uuid
-  excluidoEm     DateTime? @map("excluido_em") @db.Timestamptz
-
-  @@map("termo_link")
 }
