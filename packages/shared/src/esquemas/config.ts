@@ -25,5 +25,10 @@ export const configNucleoSchema = z.object({
   }).refine((e) => e.fim > e.inicio, { message: 'O fim do expediente precisa ser depois do início.', path: ['fim'] })
     .default({ ligado: false, dias: [1, 2, 3, 4, 5], inicio: '07:30', fim: '17:30' }),
   antecedenciaMin: z.number().int().min(0, 'A antecedência vai de 0 a 1440 minutos.').max(1440, 'A antecedência vai de 0 a 1440 minutos.').default(15),
+  // módulo 3: termos (texto vazio = padrão; prazo 0 = sem prazo)
+  termoAuto: z.boolean().default(true),
+  prazoTermoDias: z.number().int().min(0, 'O prazo vai de 0 a 90 dias.').max(90, 'O prazo vai de 0 a 90 dias.').default(7),
+  termoTxtEmp: z.string().default(''),
+  termoTxtResp: z.string().default(''),
 });
 export type ConfigNucleo = z.infer<typeof configNucleoSchema>;
