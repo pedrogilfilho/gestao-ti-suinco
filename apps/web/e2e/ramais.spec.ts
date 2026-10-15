@@ -29,8 +29,9 @@ test('cadastrar, buscar, editar e excluir um ramal', async ({ page }) => {
 
 test('a descrição com HTML aparece como texto', async ({ page }) => {
   await entrar(page, 'gerson.araujo@suinco.com.br');
-  await page.request.post('/api/ramais', { data: { numero: '2399', descricao: '<b>Chefia</b>', setor: 'TI' } });
+  const numero = `23${Date.now() % 100000}`; // número próprio deste teste (sobrevive a retry/execução em suíte)
+  await page.request.post('/api/ramais', { data: { numero, descricao: '<b>Chefia</b>', setor: 'TI' } });
   await page.goto('/ramais');
-  await page.getByLabel('Buscar ramal').fill('2399');
-  await expect(page.getByRole('row', { name: /2399/ })).toContainText('<b>Chefia</b>');
+  await page.getByLabel('Buscar ramal').fill(numero);
+  await expect(page.getByRole('row', { name: new RegExp(numero) }).first()).toContainText('<b>Chefia</b>');
 });

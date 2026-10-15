@@ -2,7 +2,7 @@
 
 Sistema interno da TI da Suinco: empréstimo e devolução de equipamentos, inventário, usuários e setores, acessos com perfis, auditoria e configurações. Esta é a reescrita do sistema atual (v4.3.0, em Firebase), agora em **Next.js + NestJS + PostgreSQL**.
 
-O sistema atual continua no ar até a reescrita cobrir tudo. A migração é feita por módulos. Prontos: **módulo 1 (núcleo)** e **módulo 2 (reservas e pedidos)**.
+O sistema atual continua no ar até a reescrita cobrir tudo. A migração é feita por módulos. Prontos: **módulo 1 (núcleo)**, **módulo 2 (reservas e pedidos)** e **módulo 4 (ramais)**. O módulo 3 (termos) foi dispensado: os termos ficam fora do sistema.
 
 ## Andamento
 
@@ -19,6 +19,7 @@ O sistema atual continua no ar até a reescrita cobrir tudo. A migração é fei
 | **Módulo 2**: reservas (conflito de horário, registrar retirada) | pronto |
 | **Módulo 2**: pedidos do colaborador no portal (normal e urgente), conversa, análise pela TI (aprovar, entregar agora, recusar, lote, Kanban) | pronto |
 | **Módulo 2**: expediente e antecedência, alertas de entrega, contadores do menu, importação de reservas e pedidos | pronto |
+| **Módulo 4**: ramais (número, descrição, setor), tela Ramais, lista no portal para consulta | pronto |
 
 O que cada teste do sistema atual vira aqui está em [`PARIDADE.md`](PARIDADE.md).
 
