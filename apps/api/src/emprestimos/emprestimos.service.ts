@@ -13,6 +13,7 @@ import { paginar, termos } from '../comum/lista';
 import { lerConfig } from '../comum/config-ler';
 import { ehDono } from '../auth/senha';
 import type { Usuario } from '../auth/decorators';
+import { contarPosse, horarioReserva, reservaNoPeriodo } from '../reservas/ocupacao';
 
 const ABERTO = { devolvidoEm: null, excluidoEm: null } satisfies Prisma.EmprestimoWhereInput;
 const INCLUIR = {
@@ -118,8 +119,12 @@ export class EmprestimosService {
       if (atrasados.length)
         throw new ErroNegocio(409, `${pessoa.nome} está com equipamento em atraso (${atrasados.map((a) => a.equipamento.codigo).join(', ')}).`, undefined, 'atraso');
     }
+    // módulo 2: o período do empréstimo não pode invadir a reserva de outra pessoa
+    const reservaAlheia = await reservaNoPeriodo(this.db, eq.id, d.retiradaEm, d.previsaoEm, { ignorarPessoa: pessoa.id, ignorarReserva: d.reservaId });
+    if (reservaAlheia)
+      throw new ErroNegocio(409, `${eq.codigo} está reservado para ${reservaAlheia.pessoa.nome} ${horarioReserva(reservaAlheia)}. Escolha outro equipamento.`, 'equipamentoId', 'conflito');
     const lim = limiteDe(pessoa.limites, eq.tipo);
-    const tem = await this.db.emprestimo.count({ where: { pessoaId: pessoa.id, ...ABERTO, equipamento: { tipo: eq.tipo } } });
+    const tem = await contarPosse(this.db, pessoa.id, eq.tipo, d.retiradaEm, d.previsaoEm, { reserva: d.reservaId, equipamento: eq.id });
     const passouLimite = tem >= lim;
     if (passouLimite) {
       if (!d.liberarLimite) throw new ErroNegocio(409, `${pessoa.nome} já está com ${tem} ${eq.tipo} nesse período (limite: ${lim}).`, undefined, 'limite');

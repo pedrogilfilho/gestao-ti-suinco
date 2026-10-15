@@ -2,7 +2,7 @@ import { ArgumentsHost, Catch, ExceptionFilter, HttpException, Logger } from '@n
 import { Prisma } from '@prisma/client';
 import type { Response } from 'express';
 
-export type CodigoErro = 'limite' | 'atraso';
+export type CodigoErro = 'limite' | 'atraso' | 'conflito' | 'repetido';
 
 export class ErroNegocio extends HttpException {
   constructor(status: 400 | 401 | 403 | 404 | 409 | 429, mensagem: string, campo?: string, codigo?: CodigoErro) {

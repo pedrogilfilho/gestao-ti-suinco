@@ -7,6 +7,7 @@ import { auditar } from '../comum/auditar';
 import { ErroNegocio } from '../comum/erros';
 import { paginar, termos } from '../comum/lista';
 import { idsPorTelefone } from '../comum/telefone';
+import { ocupacaoDosEmprestaveis } from '../reservas/ocupacao';
 import { lerConfig } from '../comum/config-ler';
 import type { Usuario } from '../auth/decorators';
 
@@ -69,6 +70,10 @@ export class EquipamentosService {
     const e = await this.db.equipamento.findFirst({ where: { id, excluidoEm: null }, include: INCLUIR });
     if (!e) throw new ErroNegocio(404, 'Equipamento não encontrado.');
     return paraTela(e);
+  }
+
+  async ocupacao(a: Date, b: Date, ignorarReserva?: string) {
+    return ocupacaoDosEmprestaveis(this.db, await lerConfig(this.db), a, b, ignorarReserva);
   }
 
   async livresParaEmprestimo() {

@@ -17,6 +17,9 @@ const camposEmprestimo = z.object({
   obs: textoOpcional,
   liberarLimite: z.boolean().optional(),
   confirmarAtraso: z.boolean().optional(),
+  // módulo 2: empréstimo que nasce de uma reserva ou de um pedido
+  reservaId: z.string().uuid().optional(),
+  pedidoId: z.string().uuid().optional(),
 });
 
 const regras = (e: { finalidade?: string; finalidadeOutra?: string; retiradaEm?: Date; previsaoEm?: Date }, ctx: z.RefinementCtx) => {
@@ -26,7 +29,7 @@ const regras = (e: { finalidade?: string; finalidadeOutra?: string; retiradaEm?:
 };
 
 export const emprestimoNovoSchema = camposEmprestimo.superRefine(regras);
-export const emprestimoEdicaoSchema = camposEmprestimo.omit({ liberarLimite: true, confirmarAtraso: true }).partial()
+export const emprestimoEdicaoSchema = camposEmprestimo.omit({ liberarLimite: true, confirmarAtraso: true, reservaId: true, pedidoId: true }).partial()
   .extend({ devolvidoEm: dataHora.nullable().optional() }).superRefine(regras);
 export const devolucaoSchema = z.object({
   devolvidoEm: dataHora.optional(), acessoriosDevolvidos: z.array(z.string()).default([]),

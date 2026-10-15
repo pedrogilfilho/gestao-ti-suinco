@@ -5,6 +5,7 @@ import { ZodPipe } from '../comum/zod.pipe';
 import { parametrosLista } from '../comum/lista';
 import { EquipeTI, Permissao, UsuarioAtual, type Usuario } from '../auth/decorators';
 import { EquipamentosService } from './equipamentos.service';
+import { ErroNegocio } from '../comum/erros';
 
 const vincularSchema = z.object({ pessoaId: z.string().uuid('Escolha um colaborador cadastrado.').nullable() });
 
@@ -15,6 +16,15 @@ export class EquipamentosController {
   @EquipeTI() @Get()
   listar(@Query() q: Record<string, string>) {
     return this.s.listar({ ...parametrosLista(q), tipo: q.tipo, situacao: q.situacao, setorId: q.setorId, pessoaId: q.pessoaId });
+  }
+
+  // módulo 2: emprestáveis com o motivo de ocupação no período (listas de reserva, aprovação e empréstimo)
+  @EquipeTI() @Get('ocupacao')
+  ocupacao(@UsuarioAtual() u: Usuario, @Query() q: Record<string, string>) {
+    if (!u.permissoes.has('reservar') && !u.permissoes.has('emprestar')) throw new ErroNegocio(403, 'Você não tem permissão para isso.');
+    const a = new Date(q.inicio ?? ''), b = new Date(q.fim ?? '');
+    if (Number.isNaN(a.getTime()) || Number.isNaN(b.getTime()) || b <= a) throw new ErroNegocio(400, 'Período inválido.');
+    return this.s.ocupacao(a, b, q.ignorarReserva || undefined);
   }
 
   @Permissao('emprestar') @Get('livres')
