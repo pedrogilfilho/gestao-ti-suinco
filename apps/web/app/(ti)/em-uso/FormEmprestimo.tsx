@@ -14,23 +14,28 @@ import { CampoAssinatura } from '@/components/CampoAssinatura';
 import { paraCampo, deCampo } from './datas';
 
 type Livre = { id: string; codigo: string; tipo: string; modelo: string; patrimonio: string };
+// Empréstimo que nasce de uma reserva ("Registrar retirada") ou de um pedido ("Entregar agora"): já vem preenchido.
+export type PresetEmprestimo = {
+  equipamento: { id: string; codigo: string; tipo: string }; pessoa: PessoaResumo; finalidade?: string; finalidadeOutra?: string;
+  chamadoGlpi?: string; obs?: string; previsaoEm?: string | null; acessorios?: string[]; reservaId?: string; pedidoId?: string; temAssinatura?: boolean;
+};
 
 // Registrar (sem `emprestimo`) ou editar um empréstimo.
-export function FormEmprestimo({ emprestimo, config, onFechar }: { emprestimo?: Emprestimo; config: Config; onFechar: () => void }) {
+export function FormEmprestimo({ emprestimo, preset, config, onFechar }: { emprestimo?: Emprestimo; preset?: PresetEmprestimo; config: Config; onFechar: () => void }) {
   const { eu } = useEu();
   const agora = new Date();
-  const [equipamentoId, setEquipamentoId] = useState(emprestimo?.equipamento.id ?? '');
+  const [equipamentoId, setEquipamentoId] = useState(emprestimo?.equipamento.id ?? preset?.equipamento.id ?? '');
   const [leitor, setLeitor] = useState('');
-  const [pessoa, setPessoa] = useState<PessoaResumo | null>(emprestimo ? { id: emprestimo.pessoa.id, nome: emprestimo.pessoa.nome, email: emprestimo.pessoa.email } : null);
+  const [pessoa, setPessoa] = useState<PessoaResumo | null>(emprestimo ? { id: emprestimo.pessoa.id, nome: emprestimo.pessoa.nome, email: emprestimo.pessoa.email } : preset?.pessoa ?? null);
   const [tecnicoId, setTecnicoId] = useState(emprestimo?.tecnicoId ?? eu?.pessoaId ?? '');
-  const [finalidade, setFinalidade] = useState(emprestimo?.finalidade ?? '');
-  const [finalidadeOutra, setFinalidadeOutra] = useState(emprestimo?.finalidadeOutra ?? '');
+  const [finalidade, setFinalidade] = useState(emprestimo?.finalidade ?? preset?.finalidade ?? '');
+  const [finalidadeOutra, setFinalidadeOutra] = useState(emprestimo?.finalidadeOutra ?? preset?.finalidadeOutra ?? '');
   const [retirada, setRetirada] = useState(paraCampo(emprestimo ? new Date(emprestimo.retiradaEm) : agora));
-  const [previsao, setPrevisao] = useState(emprestimo?.previsaoEm ? paraCampo(new Date(emprestimo.previsaoEm)) : '');
-  const [previsaoManual, setPrevisaoManual] = useState(!!emprestimo);
-  const [acessorios, setAcessorios] = useState<string[]>(emprestimo?.acessorios ?? []);
-  const [chamadoGlpi, setChamadoGlpi] = useState(emprestimo?.chamadoGlpi ?? '');
-  const [obs, setObs] = useState(emprestimo?.obs ?? '');
+  const [previsao, setPrevisao] = useState(() => { const v = emprestimo?.previsaoEm ?? preset?.previsaoEm; return v ? paraCampo(new Date(v)) : ''; });
+  const [previsaoManual, setPrevisaoManual] = useState(!!emprestimo || !!preset?.previsaoEm);
+  const [acessorios, setAcessorios] = useState<string[]>(emprestimo?.acessorios ?? preset?.acessorios ?? (preset?.equipamento.tipo.startsWith('Notebook') && config.acessorios.includes('Carregador') ? ['Carregador'] : []));
+  const [chamadoGlpi, setChamadoGlpi] = useState(emprestimo?.chamadoGlpi ?? preset?.chamadoGlpi ?? '');
+  const [obs, setObs] = useState(emprestimo?.obs ?? preset?.obs ?? '');
   const [assinatura, setAssinatura] = useState<string | undefined>();
   const [erros, setErros] = useState<Record<string, string>>({});
   const [salvando, setSalvando] = useState(false);
@@ -38,7 +43,7 @@ export function FormEmprestimo({ emprestimo, config, onFechar }: { emprestimo?: 
   const avisar = useAviso();
   const perguntar = usePerguntar();
   const ehMaster = usePode('excluir');
-  const { data: livres } = useQuery({ queryKey: ['equipamentos', 'livres'], queryFn: () => api<Livre[]>('/equipamentos/livres'), enabled: !emprestimo });
+  const { data: livres } = useQuery({ queryKey: ['equipamentos', 'livres'], queryFn: () => api<Livre[]>('/equipamentos/livres'), enabled: !emprestimo && !preset });
   const { data: tecnicos } = useQuery({ queryKey: ['pessoas', 'tecnicos'], queryFn: () => api<{ itens: PessoaResumo[] }>('/pessoas?tecnico=sim&ativo=sim&limite=100') });
 
   // previsão sugerida pela finalidade, até a pessoa mexer nela
@@ -59,7 +64,7 @@ export function FormEmprestimo({ emprestimo, config, onFechar }: { emprestimo?: 
 
   async function enviar(extra: { liberarLimite?: boolean; confirmarAtraso?: boolean } = {}): Promise<void> {
     const corpo = {
-      ...(!emprestimo && { equipamentoId }), pessoaId: pessoa?.id ?? '', tecnicoId: tecnicoId || undefined, finalidade, finalidadeOutra,
+      ...(!emprestimo && { equipamentoId }), ...(preset?.reservaId && { reservaId: preset.reservaId }), ...(preset?.pedidoId && { pedidoId: preset.pedidoId }), pessoaId: pessoa?.id ?? '', tecnicoId: tecnicoId || undefined, finalidade, finalidadeOutra,
       retiradaEm: retirada ? deCampo(retirada).toISOString() : undefined, previsaoEm: previsao ? deCampo(previsao).toISOString() : undefined,
       acessorios, chamadoGlpi, obs, ...(assinatura && { assinatura }),
     };
@@ -92,8 +97,8 @@ export function FormEmprestimo({ emprestimo, config, onFechar }: { emprestimo?: 
 
   return (
     <form onSubmit={salvar} className="grid gap-3 sm:grid-cols-2">
-      {emprestimo ? (
-        <p className="sm:col-span-2"><b>{emprestimo.equipamento.codigo}</b> <span className="meta">{emprestimo.equipamento.tipo}</span></p>
+      {emprestimo || preset ? (
+        <p className="sm:col-span-2"><b>{(emprestimo ?? preset)!.equipamento.codigo}</b> <span className="meta">{(emprestimo ?? preset)!.equipamento.tipo}</span></p>
       ) : (
         <>
           <Campo rotulo="Equipamento" erro={erros.equipamentoId}>

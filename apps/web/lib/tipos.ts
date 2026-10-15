@@ -39,4 +39,12 @@ export type Emprestimo = {
 export type Config = {
   tiposEmprestaveis: string[]; acessorios: string[]; finalidades: { nome: string; dias: number; hora: string }[];
   bloqueioAtraso: boolean; assinaturas: boolean; glpiUrl: string; avisoMin: number;
+  expediente: { ligado: boolean; dias: number[]; inicio: string; fim: string }; antecedenciaMin: number;
+};
+
+export type Reserva = {
+  id: string; equipamento: { id: string; codigo: string; tipo: string; modelo: string };
+  pessoa: { id: string; nome: string; email: string; setor: string; telefoneCorp: string | null; telefonePart: string | null };
+  inicioEm: string; fimEm: string; finalidade: string; finalidadeOutra: string; chamadoGlpi: string; obs: string;
+  status: 'ativa' | 'cancelada' | 'retirada'; pedidoId: string | null; emprestimoId: string | null; situacao: Situacao;
 };

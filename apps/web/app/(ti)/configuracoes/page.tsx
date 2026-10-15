@@ -7,6 +7,8 @@ import { useAviso } from '@/lib/aviso';
 import type { Config } from '@/lib/tipos';
 import { Campo } from '@/components/Campo';
 
+const DIAS = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+
 function FormConfig({ inicial }: { inicial: Config }) {
   const [c, setC] = useState<Config>(inicial);
   const [novoAcessorio, setNovoAcessorio] = useState('');
@@ -91,6 +93,29 @@ function FormConfig({ inicial }: { inicial: Config }) {
           <input className="campo" value={c.glpiUrl} onChange={(e) => mudar('glpiUrl', e.target.value)} placeholder="https://glpi.suinco.com.br/front/ticket.form.php?id=" />
         </Campo>
         <p className="meta text-sm">O número do chamado entra no fim do endereço.</p>
+      </fieldset>
+
+      <fieldset className="card space-y-2">
+        <legend className="rotulo px-1">Atendimento da TI (pedidos dos colaboradores)</legend>
+        <label className="flex items-center gap-2">
+          <input type="checkbox" checked={c.expediente.ligado} onChange={(e) => mudar('expediente', { ...c.expediente, ligado: e.target.checked })} /> Ligar o horário de atendimento
+        </label>
+        <p className="meta text-sm">Ligado, a retirada e a devolução dos pedidos só podem ser marcadas nos dias e horários abaixo. A TI continua podendo reservar e emprestar a qualquer hora.</p>
+        <div role="group" aria-label="Dias de atendimento" className="flex flex-wrap gap-3">
+          {DIAS.map((nome, d) => (
+            <label key={d} className="flex items-center gap-1">
+              <input type="checkbox" checked={c.expediente.dias.includes(d)}
+                onChange={(e) => mudar('expediente', { ...c.expediente, dias: e.target.checked ? [...c.expediente.dias, d].sort() : c.expediente.dias.filter((x) => x !== d) })} /> {nome}
+            </label>
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-3">
+          <Campo rotulo="Abre às"><input type="time" className="campo w-32" value={c.expediente.inicio} onChange={(e) => mudar('expediente', { ...c.expediente, inicio: e.target.value })} /></Campo>
+          <Campo rotulo="Fecha às" erro={erros.expediente}><input type="time" className="campo w-32" value={c.expediente.fim} onChange={(e) => mudar('expediente', { ...c.expediente, fim: e.target.value })} /></Campo>
+        </div>
+        <Campo rotulo="Antecedência mínima da retirada (minutos)" erro={erros.antecedenciaMin}>
+          <input type="number" min={0} max={1440} className="campo w-32" value={c.antecedenciaMin} onChange={(e) => mudar('antecedenciaMin', Number(e.target.value))} />
+        </Campo>
       </fieldset>
 
       {erros._ && <p role="alert" className="text-[var(--late)]">{erros._}</p>}
