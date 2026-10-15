@@ -8,3 +8,4 @@ export * from './config.js';
 export * from './login.js';
 export * from './pedido.js';
 export * from './reserva.js';
+export * from './ramal.js';

@@ -12,11 +12,12 @@ import { ReservasModule } from './reservas/reservas.module';
 import { PedidosModule } from './pedidos/pedidos.module';
 import { BuscaModule } from './busca/busca.module';
 import { TempoRealModule } from './tempo-real/tempo-real.module';
+import { RamaisModule } from './ramais/ramais.module';
 
 @Module({
   imports: [
     ComumModule, AuthModule, SetoresModule, PessoasModule, EquipamentosModule,
-    AcessosModule, EmprestimosModule, AuditoriaModule, ConfigModule, BuscaModule, ReservasModule, PedidosModule, TempoRealModule,
+    AcessosModule, EmprestimosModule, AuditoriaModule, ConfigModule, BuscaModule, ReservasModule, PedidosModule, RamaisModule, TempoRealModule,
   ],
 })
 export class AppModule {}

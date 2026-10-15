@@ -313,3 +313,16 @@ model Config {
 
   @@map("config")
 }
+
+// módulo 4: ramais (número, descrição, setor em texto; sem vínculo com pessoa)
+model Ramal {
+  id           String    @id @default(uuid()) @db.Uuid
+  numero       String
+  descricao    String    @default("")
+  setor        String    @default("")
+  criadoEm     DateTime  @default(now()) @map("criado_em") @db.Timestamptz
+  atualizadoEm DateTime  @updatedAt @map("atualizado_em") @db.Timestamptz
+  excluidoEm   DateTime? @map("excluido_em") @db.Timestamptz
+
+  @@map("ramal")
+}

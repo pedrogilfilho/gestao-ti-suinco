@@ -4,7 +4,7 @@ import { PrismaClient } from '@prisma/client';
 const db = new PrismaClient();
 beforeAll(async () => { await db.$connect(); });
 beforeEach(async () => {
-  await db.$executeRawUnsafe('TRUNCATE auditoria, pedido_mensagem, emprestimo, reserva, pedido, equipamento, credencial_local, acesso, grupo_acesso, pessoa, setor, config, tentativa_login CASCADE');
+  await db.$executeRawUnsafe('TRUNCATE auditoria, ramal, pedido_mensagem, emprestimo, reserva, pedido, equipamento, credencial_local, acesso, grupo_acesso, pessoa, setor, config, tentativa_login CASCADE');
 });
 afterAll(async () => { await db.$disconnect(); });
 

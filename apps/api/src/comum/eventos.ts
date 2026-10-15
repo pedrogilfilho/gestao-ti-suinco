@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { EventEmitter } from 'node:events';
 
-export type AreaEvento = 'emprestimos' | 'equipamentos' | 'pessoas' | 'setores' | 'acessos' | 'config' | 'reservas' | 'pedidos';
+export type AreaEvento = 'emprestimos' | 'equipamentos' | 'pessoas' | 'setores' | 'acessos' | 'config' | 'reservas' | 'pedidos' | 'ramais';
 export type Eventos = {
   'acesso.derrubado': { acessoId: string };
   mudou: { area: AreaEvento; pessoaIds?: string[] };
