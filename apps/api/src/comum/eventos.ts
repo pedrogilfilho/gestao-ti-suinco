@@ -5,6 +5,8 @@ export type AreaEvento = 'emprestimos' | 'equipamentos' | 'pessoas' | 'setores' 
 export type Eventos = {
   'acesso.derrubado': { acessoId: string };
   mudou: { area: AreaEvento; pessoaIds?: string[] };
+  // mensagem nova do colaborador num pedido (a TI busca a conversa pela API)
+  mensagem: { pedidoId: string };
 };
 
 // Avisos internos (depois de a transação confirmar); o gateway de tempo real repassa para as telas.

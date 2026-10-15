@@ -29,6 +29,8 @@ export class TempoRealGateway implements OnGatewayInit {
       server.to(['equipe', ...(pessoaIds ?? []).map((id) => `pessoa:${id}`)]).emit('mudou', { area });
     });
 
+    this.eventos.on('mensagem', ({ pedidoId }) => { server.to('equipe').emit('mensagem', { pedidoId }); });
+
     this.eventos.on('acesso.derrubado', async ({ acessoId }) => {
       const socks = await server.in(`acesso:${acessoId}`).fetchSockets();
       for (const s of socks) {
