@@ -12,7 +12,7 @@ type Item = { rotulo: string; href: string; pode?: Permissao; contador?: 'atrasa
 // Só os módulos que já existem na reescrita. Os próximos entram aqui quando forem migrados.
 export const MENU: { grupo: string; itens: Item[] }[] = [
   { grupo: 'Operação', itens: [{ rotulo: 'Em uso', href: '/em-uso', contador: 'atrasados' }, { rotulo: 'Pedidos', href: '/pedidos', contador: 'pedidosPendentes' }, { rotulo: 'Reservas', href: '/reservas', contador: 'reservasHoje' }] },
-  { grupo: 'Cadastros', itens: [{ rotulo: 'Equipamentos', href: '/equipamentos' }, { rotulo: 'Usuários', href: '/usuarios' }, { rotulo: 'Setores', href: '/setores' }] },
+  { grupo: 'Cadastros', itens: [{ rotulo: 'Equipamentos', href: '/equipamentos' }, { rotulo: 'Usuários', href: '/usuarios' }, { rotulo: 'Setores', href: '/setores' }, { rotulo: 'Ramais', href: '/ramais' }] },
   { grupo: 'Análise', itens: [{ rotulo: 'Auditoria', href: '/auditoria', pode: 'auditoria' }] },
   { grupo: 'Administração', itens: [{ rotulo: 'Configurações', href: '/configuracoes', pode: 'config' }, { rotulo: 'Acessos', href: '/acessos', pode: 'acessos' }] },
 ];

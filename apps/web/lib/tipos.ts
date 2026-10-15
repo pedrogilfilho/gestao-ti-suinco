@@ -60,3 +60,5 @@ export type Pedido = {
   equipamento: { id: string; codigo: string; tipo: string; modelo: string } | null; reserva: { id: string; status: string } | null;
   emprestimo: { id: string } | null; temAssinatura: boolean; semEquipamento: boolean; atrasos: number;
 };
+
+export type Ramal = { id: string; numero: string; descricao: string; setor: string };

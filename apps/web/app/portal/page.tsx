@@ -6,7 +6,7 @@ import { api } from '@/lib/api';
 import { dataHoraBR } from '@/lib/tipos';
 import { Selo } from '@/components/Selo';
 import { useEu } from '@/lib/sessao';
-import type { Config } from '@/lib/tipos';
+import type { Config, Ramal } from '@/lib/tipos';
 import { AvisoExpediente, FormPedido } from './FormPedido';
 import { MinhasSolicitacoes, type MeuPedido } from './MinhasSolicitacoes';
 
@@ -67,12 +67,44 @@ function Pedidos() {
   );
 }
 
+// Lista de ramais para consulta (qualquer pessoa logada).
+function Ramais() {
+  const [q, setQ] = useState('');
+  const query = useQuery({ queryKey: ['ramais', 'lista', q], queryFn: () => api<{ itens: Ramal[] }>(`/ramais/lista?${new URLSearchParams(q ? { q } : {})}`) });
+  const itens = query.data?.itens ?? [];
+  return (
+    <section>
+      <h2 className="mb-3 text-lg font-semibold">Ramais</h2>
+      <input className="campo mb-3 max-w-xs" placeholder="Buscar por ramal, nome ou setor" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Buscar ramal" />
+      {query.isLoading && <p className="meta">Carregando...</p>}
+      {!query.isLoading && !itens.length && <p className="meta">Nenhum ramal encontrado.</p>}
+      {itens.length > 0 && (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead><tr className="text-left meta"><th className="py-2 pr-4">Ramal</th><th className="py-2 pr-4">Descrição</th><th className="py-2 pr-4">Setor</th></tr></thead>
+            <tbody>
+              {itens.map((r) => (
+                <tr key={r.id} className="border-t border-[var(--line)]">
+                  <td className="py-2 pr-4 font-semibold">{r.numero}</td>
+                  <td className="py-2 pr-4">{r.descricao || '—'}</td>
+                  <td className="py-2 pr-4">{r.setor || '—'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
+  );
+}
+
 export default function PaginaPortal() {
   const { eu } = useEu();
   return (
     <div className="space-y-8">
       {eu?.papel === 'solicitante' && <Pedidos />}
       <MeusEquipamentos />
+      <Ramais />
     </div>
   );
 }
