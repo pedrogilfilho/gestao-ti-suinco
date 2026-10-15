@@ -6,4 +6,3 @@ export * from './situacoes.js';
 export * from './esquemas/index.js';
 export * from './previsao.js';
 export * from './expediente.js';
-export * from './termos.js';
