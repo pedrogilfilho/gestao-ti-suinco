@@ -46,25 +46,28 @@ model Setor {
 }
 
 model Pessoa {
-  id            String       @id @default(uuid()) @db.Uuid
+  id            String           @id @default(uuid()) @db.Uuid
   nome          String
   email         String
-  setorId       String       @map("setor_id") @db.Uuid
-  setor         Setor        @relation(fields: [setorId], references: [id])
-  telefoneCorp  String?      @map("telefone_corp")
-  telefonePart  String?      @map("telefone_part")
-  login         String       @default("")
-  ativo         Boolean      @default(true)
-  assinaturaUrl String?      @map("assinatura_url")
-  fotoUrl       String?      @map("foto_url")
-  limites       Json         @default("{}")
-  criadoEm      DateTime     @default(now()) @map("criado_em") @db.Timestamptz
-  atualizadoEm  DateTime     @updatedAt @map("atualizado_em") @db.Timestamptz
-  excluidoEm    DateTime?    @map("excluido_em") @db.Timestamptz
+  setorId       String           @map("setor_id") @db.Uuid
+  setor         Setor            @relation(fields: [setorId], references: [id])
+  telefoneCorp  String?          @map("telefone_corp")
+  telefonePart  String?          @map("telefone_part")
+  login         String           @default("")
+  ativo         Boolean          @default(true)
+  assinaturaUrl String?          @map("assinatura_url")
+  fotoUrl       String?          @map("foto_url")
+  limites       Json             @default("{}")
+  criadoEm      DateTime         @default(now()) @map("criado_em") @db.Timestamptz
+  atualizadoEm  DateTime         @updatedAt @map("atualizado_em") @db.Timestamptz
+  excluidoEm    DateTime?        @map("excluido_em") @db.Timestamptz
   acesso        Acesso?
   equipamentos  Equipamento[]
-  emprestimos   Emprestimo[] @relation("tomador")
-  entregas      Emprestimo[] @relation("tecnico")
+  emprestimos   Emprestimo[]     @relation("tomador")
+  entregas      Emprestimo[]     @relation("tecnico")
+  reservas      Reserva[]
+  pedidos       Pedido[]
+  mensagens     PedidoMensagem[]
 
   @@map("pessoa")
 }
@@ -147,6 +150,8 @@ model Equipamento {
   atualizadoEm    DateTime      @updatedAt @map("atualizado_em") @db.Timestamptz
   excluidoEm      DateTime?     @map("excluido_em") @db.Timestamptz
   emprestimos     Emprestimo[]
+  reservas        Reserva[]
+  pedidos         Pedido[]
 
   @@map("equipamento")
 }
@@ -175,8 +180,116 @@ model Emprestimo {
   criadoEm               DateTime    @default(now()) @map("criado_em") @db.Timestamptz
   atualizadoEm           DateTime    @updatedAt @map("atualizado_em") @db.Timestamptz
   excluidoEm             DateTime?   @map("excluido_em") @db.Timestamptz
+  // módulo 2: de onde veio o empréstimo
+  reservaId              String?     @unique @map("reserva_id") @db.Uuid
+  reserva                Reserva?    @relation(fields: [reservaId], references: [id])
+  pedidoId               String?     @unique @map("pedido_id") @db.Uuid
+  pedido                 Pedido?     @relation(fields: [pedidoId], references: [id])
 
   @@map("emprestimo")
+}
+
+// ---------- módulo 2: reservas e pedidos ----------
+
+enum StatusReserva {
+  ativa
+  cancelada
+  retirada
+}
+
+enum StatusPedido {
+  pendente
+  aprovado
+  recusado
+  cancelado
+  entregue
+}
+
+enum DeMensagem {
+  colab
+  ti
+  sistema
+}
+
+// Equipamento separado para uma pessoa num período. Ocupa o equipamento de inicio_em até fim_em (devolução prevista).
+model Reserva {
+  id              String        @id @default(uuid()) @db.Uuid
+  equipamentoId   String        @map("equipamento_id") @db.Uuid
+  equipamento     Equipamento   @relation(fields: [equipamentoId], references: [id])
+  pessoaId        String        @map("pessoa_id") @db.Uuid
+  pessoa          Pessoa        @relation(fields: [pessoaId], references: [id])
+  inicioEm        DateTime      @map("inicio_em") @db.Timestamptz
+  fimEm           DateTime      @map("fim_em") @db.Timestamptz
+  finalidade      String        @default("")
+  finalidadeOutra String        @default("") @map("finalidade_outra")
+  chamadoGlpi     String        @default("") @map("chamado_glpi")
+  obs             String        @default("")
+  status          StatusReserva @default(ativa)
+  pedidoId        String?       @unique @map("pedido_id") @db.Uuid
+  pedido          Pedido?       @relation(fields: [pedidoId], references: [id])
+  criadoPorId     String?       @map("criado_por_id") @db.Uuid
+  criadoEm        DateTime      @default(now()) @map("criado_em") @db.Timestamptz
+  atualizadoEm    DateTime      @updatedAt @map("atualizado_em") @db.Timestamptz
+  excluidoEm      DateTime?     @map("excluido_em") @db.Timestamptz
+  emprestimo      Emprestimo?
+
+  @@index([pessoaId])
+  @@map("reserva")
+}
+
+// Pedido de empréstimo feito pelo colaborador no portal.
+model Pedido {
+  id                String           @id @default(uuid()) @db.Uuid
+  pessoaId          String           @map("pessoa_id") @db.Uuid
+  pessoa            Pessoa           @relation(fields: [pessoaId], references: [id])
+  tipo              String
+  urgente           Boolean          @default(false)
+  justificativa     String           @default("")
+  finalidade        String           @default("")
+  finalidadeOutra   String           @default("") @map("finalidade_outra")
+  chamadoGlpi       String           @default("") @map("chamado_glpi")
+  retiradaEm        DateTime         @map("retirada_em") @db.Timestamptz
+  devolucaoEm       DateTime?        @map("devolucao_em") @db.Timestamptz
+  acessorios        Json             @default("[]")
+  obs               String           @default("")
+  assinaturaUrl     String?          @map("assinatura_url")
+  telefoneCorp      String?          @map("telefone_corp")
+  telefonePart      String?          @map("telefone_part")
+  status            StatusPedido     @default(pendente)
+  motivoRecusa      String           @default("") @map("motivo_recusa")
+  mensagemTi        String           @default("") @map("mensagem_ti")
+  equipamentoId     String?          @map("equipamento_id") @db.Uuid
+  equipamento       Equipamento?     @relation(fields: [equipamentoId], references: [id])
+  respondidoPorId   String?          @map("respondido_por_id") @db.Uuid
+  respondidoEm      DateTime?        @map("respondido_em") @db.Timestamptz
+  editadoEm         DateTime?        @map("editado_em") @db.Timestamptz
+  semEquipAvisadoEm DateTime?        @map("sem_equip_avisado_em") @db.Timestamptz
+  ultimaDe          DeMensagem?      @map("ultima_de")
+  ultimaEm          DateTime?        @map("ultima_em") @db.Timestamptz
+  criadoEm          DateTime         @default(now()) @map("criado_em") @db.Timestamptz
+  atualizadoEm      DateTime         @updatedAt @map("atualizado_em") @db.Timestamptz
+  excluidoEm        DateTime?        @map("excluido_em") @db.Timestamptz
+  mensagens         PedidoMensagem[]
+  reserva           Reserva?
+  emprestimo        Emprestimo?
+
+  @@index([pessoaId])
+  @@index([status])
+  @@map("pedido")
+}
+
+model PedidoMensagem {
+  id       String     @id @default(uuid()) @db.Uuid
+  pedidoId String     @map("pedido_id") @db.Uuid
+  pedido   Pedido     @relation(fields: [pedidoId], references: [id])
+  de       DeMensagem
+  autorId  String?    @map("autor_id") @db.Uuid
+  autor    Pessoa?    @relation(fields: [autorId], references: [id])
+  texto    String
+  em       DateTime   @default(now()) @db.Timestamptz
+
+  @@index([pedidoId, em])
+  @@map("pedido_mensagem")
 }
 
 model Auditoria {
