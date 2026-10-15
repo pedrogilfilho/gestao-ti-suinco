@@ -27,12 +27,19 @@ const INCLUIR = {
   pessoa: { select: { id: true, nome: true, email: true } },
   setor: { select: { id: true, nome: true } },
   emprestimos: { where: ABERTO, select: { id: true, previsaoEm: true, pessoa: { select: { id: true, nome: true } } } },
+  // módulo 2: as reservas ativas mais à frente (a próxima que ainda não passou é escolhida em paraTela)
+  reservas: {
+    where: { status: 'ativa', excluidoEm: null }, orderBy: { inicioEm: 'desc' }, take: 10,
+    select: { inicioEm: true, fimEm: true, pessoa: { select: { nome: true } } },
+  },
 } satisfies Prisma.EquipamentoInclude;
 type EquipCompleto = Prisma.EquipamentoGetPayload<{ include: typeof INCLUIR }>;
 
-const paraTela = ({ emprestimos, ...e }: EquipCompleto) => {
+const paraTela = ({ emprestimos, reservas, ...e }: EquipCompleto) => {
   const aberto = emprestimos[0] ?? null;
+  const prox = reservas.filter((r) => r.fimEm > new Date()).at(-1) ?? null;
   return {
+    proximaReserva: prox && { pessoaNome: prox.pessoa.nome, inicioEm: prox.inicioEm },
     ...e, situacaoExibida: situacaoEquipamento(e, !!aberto),
     emprestimoAberto: aberto && { id: aberto.id, pessoaId: aberto.pessoa.id, pessoaNome: aberto.pessoa.nome, previsaoEm: aberto.previsaoEm },
   };

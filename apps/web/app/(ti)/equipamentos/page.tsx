@@ -7,7 +7,7 @@ import { useAviso } from '@/lib/aviso';
 import { usePerguntar } from '@/lib/pergunta';
 import { usePode } from '@/lib/usePode';
 import { useFiltrosUrl } from '@/lib/useFiltrosUrl';
-import type { Equipamento } from '@/lib/tipos';
+import { dataHoraBR, type Equipamento } from '@/lib/tipos';
 import { PaginaLista, type Coluna } from '@/components/PaginaLista';
 import { ChipsFiltro, type Opcao } from '@/components/ChipsFiltro';
 import { Busca } from '@/components/Busca';
@@ -22,6 +22,10 @@ const SITUACAO: Opcao[] = [
   { valor: 'manut', rotulo: 'Em manutenção', cls: 'warn' }, { valor: 'danificado', rotulo: 'Danificado', cls: 'late' },
   { valor: 'extraviado', rotulo: 'Extraviado', cls: 'late' }, { valor: 'baixado', rotulo: 'Baixado', cls: 'late' },
 ];
+// "Reservado para Ana em 20/10 08:00" (a situação continua Disponível)
+const reservado = (e: Equipamento) => e.proximaReserva && (
+  <span className="meta block text-xs">Reservado para {e.proximaReserva.pessoaNome} em {dataHoraBR(e.proximaReserva.inicioEm)}</span>
+);
 const vinculo = (e: Equipamento) => e.pessoa?.nome ?? (e.vinculoLivre || e.emprestimoAberto?.pessoaNome || '');
 
 function Equipamentos() {
@@ -56,7 +60,7 @@ function Equipamentos() {
     { titulo: 'Modelo', celula: (e) => e.modelo },
     { titulo: 'Patrimônio', celula: (e) => e.patrimonio },
     { titulo: 'Vinculado a', celula: vinculo },
-    { titulo: 'Situação', celula: (e) => <Selo s={e.situacaoExibida} /> },
+    { titulo: 'Situação', celula: (e) => <><Selo s={e.situacaoExibida} />{reservado(e)}</> },
     { titulo: '', celula: acoes },
   ];
 
@@ -83,6 +87,7 @@ function Equipamentos() {
             <div className="flex items-start justify-between gap-2"><b>{e.codigo}</b><Selo s={e.situacaoExibida} /></div>
             <p className="meta">{[e.tipo, e.modelo ? `Modelo: ${e.modelo}` : '', e.patrimonio && `patr. ${e.patrimonio}`].filter(Boolean).join(' · ')}</p>
             {vinculo(e) && <p className="text-sm">Com: {vinculo(e)}</p>}
+            {reservado(e)}
             <div className="mt-2">{acoes(e)}</div>
           </>
         )}

@@ -10,6 +10,7 @@ export type Equipamento = {
   predio: string; pontoRede: string; firmware: string; trocasCabeca: number | null; licencas: { nome: string; chave: string }[];
   dataAtivacao: string | null; obs: string; situacaoExibida: Situacao;
   emprestimoAberto: { id: string; pessoaId: string; pessoaNome: string; previsaoEm: string | null } | null;
+  proximaReserva: { pessoaNome: string; inicioEm: string } | null;
 };
 
 export type Setor = { id: string; nome: string; pessoas: number; equipamentos: number };
@@ -47,4 +48,15 @@ export type Reserva = {
   pessoa: { id: string; nome: string; email: string; setor: string; telefoneCorp: string | null; telefonePart: string | null };
   inicioEm: string; fimEm: string; finalidade: string; finalidadeOutra: string; chamadoGlpi: string; obs: string;
   status: 'ativa' | 'cancelada' | 'retirada'; pedidoId: string | null; emprestimoId: string | null; situacao: Situacao;
+};
+
+// Pedido como a TI vê (GET /pedidos e /pedidos/:id)
+export type Pedido = {
+  id: string; tipo: string; urgente: boolean; justificativa: string; finalidade: string; finalidadeOutra: string; chamadoGlpi: string;
+  retiradaEm: string; devolucaoEm: string | null; acessorios: string[]; obs: string; telefoneCorp: string | null; telefonePart: string | null;
+  status: 'pendente' | 'aprovado' | 'recusado' | 'cancelado' | 'entregue'; motivoRecusa: string; mensagemTi: string;
+  respondidoEm: string | null; editadoEm: string | null; semEquipAvisadoEm: string | null; ultimaDe: 'colab' | 'ti' | 'sistema' | null; criadoEm: string;
+  pessoa: { id: string; nome: string; email: string; setor: string; telefoneCorp: string | null; telefonePart: string | null };
+  equipamento: { id: string; codigo: string; tipo: string; modelo: string } | null; reserva: { id: string; status: string } | null;
+  emprestimo: { id: string } | null; temAssinatura: boolean; semEquipamento: boolean; atrasos: number;
 };

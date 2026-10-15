@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { entrar } from './util';
 
-const TELAS = ['/em-uso', '/reservas', '/equipamentos', '/usuarios', '/setores', '/auditoria', '/configuracoes', '/acessos'];
+const TELAS = ['/em-uso', '/pedidos', '/reservas', '/equipamentos', '/usuarios', '/setores', '/auditoria', '/configuracoes', '/acessos'];
 
 // No celular (390 px) nenhuma tela pode ter rolagem para o lado, nos dois temas.
 for (const tema of ['light', 'dark'] as const) {

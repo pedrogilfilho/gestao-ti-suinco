@@ -74,6 +74,15 @@ describe('análise de pedidos', () => {
     expect(depois!.emprestimo!.id).toBe(e.body.id);
     expect(await msgs(p.id)).toEqual([['sistema', 'Pedido aprovado e entregue: NB-1.']]);
   });
+  it('entregar agora usa a assinatura colhida no pedido', async () => {
+    const { at, s, nb1, pedido } = await cenario();
+    const p = await pedido({ assinaturaUrl: 'assinaturas/do-pedido.png' });
+    await at.post('/api/emprestimos').send({
+      equipamentoId: nb1.id, pessoaId: s.pessoaId, finalidade: 'Viagem', retiradaEm: new Date().toISOString(),
+      previsaoEm: new Date(Date.now() + 4 * H).toISOString(), pedidoId: p.id,
+    }).expect(201);
+    expect((await db.emprestimo.findFirst({ where: { pedidoId: p.id } }))!.assinaturaRetiradaUrl).toBe('assinaturas/do-pedido.png');
+  });
   it('recusar: Outro exige detalhe; o motivo fica no pedido e na conversa', async () => {
     const { at, pedido } = await cenario();
     const p = await pedido();

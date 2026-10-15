@@ -67,6 +67,15 @@ describe('ocupação de equipamento', () => {
   });
 });
 
+describe('lista de equipamentos', () => {
+  it('mostra a próxima reserva ativa', async () => {
+    const { ag, ana, nb } = await cenario();
+    await reservar(nb.id, ana.id, amanha(8), amanha(12));
+    const l = (await ag.get('/api/equipamentos?q=NB-1').expect(200)).body.itens as { codigo: string; proximaReserva: { pessoaNome: string } | null }[];
+    expect(l.find((x) => x.codigo === 'NB-1')!.proximaReserva).toMatchObject({ pessoaNome: 'Ana Reis' });
+  });
+});
+
 describe('empréstimo respeita reservas', () => {
   const corpo = (equipamentoId: string, pessoaId: string, previsaoEm: Date) => ({
     equipamentoId, pessoaId, finalidade: 'Viagem', retiradaEm: new Date().toISOString(), previsaoEm: previsaoEm.toISOString(), assinatura: PNG,

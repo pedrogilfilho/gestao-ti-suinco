@@ -11,6 +11,12 @@ export function useTempoReal() {
     s.on('mudou', ({ area }: { area: string }) => {
       void qc.invalidateQueries({ queryKey: [area] });
       void qc.invalidateQueries({ queryKey: ['contadores'] });
+      void qc.invalidateQueries({ queryKey: ['alertas'] });
+    });
+    // mensagem nova do colaborador num pedido: a janela "Mensagem nova" (MensagemNova) ouve este evento
+    s.on('mensagem', ({ pedidoId }: { pedidoId: string }) => {
+      void qc.invalidateQueries({ queryKey: ['pedidos'] });
+      window.dispatchEvent(new CustomEvent('gt-mensagem', { detail: { pedidoId } }));
     });
     s.on('sair', () => {
       qc.clear();

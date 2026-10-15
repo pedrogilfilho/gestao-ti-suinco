@@ -3,6 +3,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { useEu } from '@/lib/sessao';
 import { useTempoReal } from '@/lib/tempoReal';
+import { MensagemNova } from '@/components/MensagemNova';
 import { MenuLateral } from '@/components/MenuLateral';
 import { BarraTopo } from '@/components/BarraTopo';
 
@@ -26,6 +27,7 @@ function AreaTI({ children }: { children: ReactNode }) {
       <div className="min-w-0 flex-1">
         <BarraTopo esquerda={<button type="button" className="btn ghost md:hidden" aria-label="Abrir menu" onClick={() => setGaveta(true)}>☰</button>} />
         <main className="p-4">{children}</main>
+        <MensagemNova />
       </div>
     </div>
   );

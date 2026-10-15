@@ -120,7 +120,7 @@ export class EmprestimosService {
       if (pedido.pessoaId !== d.pessoaId) throw new ErroNegocio(400, 'O empréstimo precisa ser para quem fez o pedido.');
     }
     const eq = await this.conferirEquipamento(this.db, d.equipamentoId, cfg);
-    if (cfg.assinaturas && !d.assinatura) throw new ErroNegocio(400, 'O colaborador precisa assinar a retirada.', 'assinatura');
+    if (cfg.assinaturas && !d.assinatura && !pedido?.assinaturaUrl) throw new ErroNegocio(400, 'O colaborador precisa assinar a retirada.', 'assinatura');
     if (d.finalidade !== 'Outra' && !cfg.finalidades.some((f) => f.nome === d.finalidade)) throw new ErroNegocio(400, 'Escolha a finalidade.', 'finalidade');
 
     const tecnicoId = d.tecnicoId ?? u.pessoaId;
@@ -146,7 +146,7 @@ export class EmprestimosService {
       if (!u.permissoes.has('excluir')) throw new ErroNegocio(403, 'Só o Administrador Master pode liberar essa exceção.');
     }
 
-    const assinaturaRetiradaUrl = d.assinatura ? await this.arquivos.salvarPng(d.assinatura, 'assinaturas') : null;
+    const assinaturaRetiradaUrl = d.assinatura ? await this.arquivos.salvarPng(d.assinatura, 'assinaturas') : pedido?.assinaturaUrl ?? null;
     try {
       const e = await this.db.$transaction(async (tx) => {
         const e = await tx.emprestimo.create({

@@ -16,6 +16,7 @@ import { Dialogo } from '@/components/Dialogo';
 import { FormEmprestimo } from './FormEmprestimo';
 import { FormDevolucao } from './FormDevolucao';
 import { Resolver } from './Resolver';
+import { AlertasEntrega } from '@/components/AlertasEntrega';
 
 const MOSTRAR: Opcao[] = [
   { valor: 'abertos', rotulo: 'Abertos', cls: 'out' }, { valor: 'atrasados', rotulo: 'Atrasados', cls: 'late' },
@@ -87,6 +88,7 @@ function EmUso() {
     : `${{ editar: 'Editar empréstimo de', devolver: 'Devolver', resolver: 'Resolver' }[aberto.tipo]} ${aberto.e.equipamento.codigo}`;
   return (
     <>
+      <AlertasEntrega />
       <PaginaLista<Emprestimo>
         titulo="Em uso" area="emprestimos" caminho="/emprestimos" filtros={f} auditoriaArea="emprestimos"
         colunas={colunas} nomeLinha={(e) => `${e.equipamento.codigo} — ${e.pessoa.nome}`}
