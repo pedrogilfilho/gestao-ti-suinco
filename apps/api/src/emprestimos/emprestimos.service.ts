@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import {
-  limiteDe, situacaoEmprestimo, situacaoEquipamento,
+  diaSP, limiteDe, situacaoEmprestimo, situacaoEquipamento,
   type ConfigNucleo, type Devolucao, type EmprestimoEdicao, type EmprestimoNovo, type Resolver, type Situacao,
 } from '@gestao/shared';
 import { PrismaService, type Tx } from '../comum/prisma.service';
@@ -289,11 +289,18 @@ export class EmprestimosService {
 
   async contadores() {
     const agora = new Date();
-    const [atrasados, abertos] = await Promise.all([
+    const hoje = new Date(`${diaSP(agora)}T00:00:00-03:00`), amanha = new Date(hoje.getTime() + 86_400_000);
+    const pend = { status: 'pendente' as const, excluidoEm: null };
+    const [atrasados, abertos, pedidosPendentes, pedidosUrgentes, pedidosComMensagem, reservasHoje] = await Promise.all([
       this.db.emprestimo.count({ where: { ...ABERTO, previsaoEm: { lt: agora } } }),
       this.db.emprestimo.count({ where: ABERTO }),
+      // módulo 2: menu de Pedidos e Reservas
+      this.db.pedido.count({ where: pend }),
+      this.db.pedido.count({ where: { ...pend, urgente: true } }),
+      this.db.pedido.count({ where: { excluidoEm: null, ultimaDe: 'colab', status: { not: 'cancelado' } } }),
+      this.db.reserva.count({ where: { status: 'ativa', excluidoEm: null, inicioEm: { gte: hoje, lt: amanha } } }),
     ]);
-    return { atrasados, abertos };
+    return { atrasados, abertos, pedidosPendentes, pedidosUrgentes, pedidosComMensagem, reservasHoje };
   }
 
   async caminhoAssinatura(u: Usuario, id: string, qual: 'retirada' | 'devolucao') {

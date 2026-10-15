@@ -189,7 +189,7 @@ describe('portal e contadores', () => {
   it('contadores', async () => {
     const { ag, nb1, base } = await cenario();
     await ag.post('/api/emprestimos').send({ ...base, equipamentoId: nb1.id, retiradaEm: new Date(Date.now() - 2 * 3600e3).toISOString(), previsaoEm: new Date(Date.now() - 3600e3).toISOString() }).expect(201);
-    expect((await ag.get('/api/contadores')).body).toEqual({ atrasados: 1, abertos: 1 });
+    expect((await ag.get('/api/contadores')).body).toMatchObject({ atrasados: 1, abertos: 1 });
   });
   it('assinatura da retirada é servida para quem empresta e para o dono do empréstimo', async () => {
     const { ag, nb1, base } = await cenario();
